@@ -9,7 +9,7 @@ import {
   updateDoc,
   setDoc,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/lib/firebase-client";
 import type { Product, TimeRulesConfig, CategoryReference } from "@/types";
 
 export class FirebaseProductService {

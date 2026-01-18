@@ -20,7 +20,7 @@ export const categories = pgTable("categories", {
   slug: text("slug").notNull().unique(),
   description: text("description"),
   image: text("image"),
-  timeSlots: jsonb("time_slots").notNull(), // ["morning", "afternoon", "evening"]
+  timeSlots: jsonb("time_slots").$type<string[]>().notNull(), // ["morning", "afternoon", "evening"]
   isActive: boolean("is_active").default(true),
   sortOrder: integer("sort_order").default(0),
 });
@@ -85,62 +85,35 @@ export const recommendations = pgTable("recommendations", {
 });
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertCategorySchema = createInsertSchema(categories).omit({
-  id: true,
-});
-
-export const insertProductSchema = createInsertSchema(products).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertCartSchema = createInsertSchema(cart).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertOrderSchema = createInsertSchema(orders).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertWishlistSchema = createInsertSchema(wishlists).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertRecommendationSchema = createInsertSchema(recommendations).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertUserSchema = createInsertSchema(users);
+export const insertCategorySchema = createInsertSchema(categories);
+export const insertProductSchema = createInsertSchema(products);
+export const insertCartSchema = createInsertSchema(cart);
+export const insertOrderSchema = createInsertSchema(orders);
+export const insertWishlistSchema = createInsertSchema(wishlists);
+export const insertRecommendationSchema = createInsertSchema(recommendations);
 
 // Types
 export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertUser = typeof users.$inferInsert;
 
 export type Category = typeof categories.$inferSelect;
-export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type InsertCategory = typeof categories.$inferInsert;
 
 export type Product = typeof products.$inferSelect;
-export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type InsertProduct = typeof products.$inferInsert;
 
 export type CartItem = typeof cart.$inferSelect;
-export type InsertCartItem = z.infer<typeof insertCartSchema>;
+export type InsertCartItem = typeof cart.$inferInsert;
 
 export type Order = typeof orders.$inferSelect;
-export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type InsertOrder = typeof orders.$inferInsert;
 
 export type WishlistItem = typeof wishlists.$inferSelect;
-export type InsertWishlistItem = z.infer<typeof insertWishlistSchema>;
+export type InsertWishlistItem = typeof wishlists.$inferInsert;
 
 export type Recommendation = typeof recommendations.$inferSelect;
-export type InsertRecommendation = z.infer<typeof insertRecommendationSchema>;
+export type InsertRecommendation = typeof recommendations.$inferInsert;
 
 // Time slot enum
 export const TimeSlot = z.enum(["morning", "afternoon", "evening"]);

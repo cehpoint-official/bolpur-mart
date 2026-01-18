@@ -1,22 +1,20 @@
-// import { drizzle } from 'drizzle-orm/vercel-postgres';
-// import { sql } from '@vercel/postgres';
-// import * as schema from '@/shared/schema';
+import { db, rtdb, auth, storage } from "./firebase-client";
+import { getAdminFirestore, getAdminDatabase, getAdminAuth } from "./firebase-admin";
 
-// // Check if we're in a production environment
-// const isProduction = process.env.NODE_ENV === 'production';
+// Client-side Firebase exports
+export { db, rtdb, auth, storage };
 
-// // Initialize the database connection
-// export const db = drizzle(sql, { schema });
+// Server-side (Admin) Firebase exports
+export const adminDb = getAdminFirestore;
+export const adminRtdb = getAdminDatabase;
+export const adminAuth = getAdminAuth;
 
-// // Helper function to execute queries with error handling
-// export async function executeQuery<T>(queryFn: () => Promise<T>): Promise<T> {
-//   try {
-//     return await queryFn();
-//   } catch (error) {
-//     console.error('Database query error:', error);
-//     throw new Error('Database operation failed');
-//   }
-// }
-
-// // Export schema for use in API routes
-// export { schema };
+// Helper function to execute operations with error handling
+export async function executeDbOperation<T>(operation: () => Promise<T>): Promise<T> {
+    try {
+        return await operation();
+    } catch (error) {
+        console.error('Database operation error:', error);
+        throw error;
+    }
+}

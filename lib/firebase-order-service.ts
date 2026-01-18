@@ -14,7 +14,7 @@ import {
   DocumentSnapshot,
   startAfter,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebase-client";
 import type { Order, OrderItem, Address } from "@/types";
 
 export interface OrdersQueryResult {
@@ -284,7 +284,7 @@ export class FirebaseOrderService {
         },
       };
       console.log("Creating order in Firestore:", firestoreOrder);
-      
+
 
       const docRef = await addDoc(
         collection(db, this.ordersCollection),

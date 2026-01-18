@@ -15,7 +15,7 @@ import {
   DocumentReference,
   DocumentData,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/lib/firebase-client";
 import type {
   User,
   InsertUser,
@@ -92,7 +92,7 @@ class Storage {
     const snap = await getDocs(q);
     return snap.docs
       .map(d => ({ id: d.id, ...d.data() } as Category))
-      .filter(c => c.timeSlots?.includes(timeSlot));
+      .filter(c => (c.timeSlots as string[])?.includes(timeSlot));
   }
 
   async getCategory(id: string): Promise<Category | undefined> {

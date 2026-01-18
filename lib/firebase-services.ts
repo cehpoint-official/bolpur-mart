@@ -17,7 +17,7 @@ import {
   updateDoc,
   DocumentData
 } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db } from './firebase-client';
 import type { Address, CreateUser, User, PaymentMethod } from '@/types';
 import type { AuthUser } from '@/types/auth';
 import { TokenManager } from './auth/token-manager';
@@ -521,7 +521,7 @@ export class FirebaseAuthService {
   }
 
   // Add New Payment Method
-  static async addPaymentMethod(newPayment: Omit<PaymentMethod, 'id' | 'isDefault' | 'lastUsed'>): Promise<void> {
+  static async addPaymentMethod(newPayment: Omit<PaymentMethod, 'id' | 'lastUsed'> & { isDefault?: boolean }): Promise<void> {
     const user = auth.currentUser;
     if (!user) throw new Error('No authenticated user');
     const userDocRef = doc(db, 'users', user.uid);

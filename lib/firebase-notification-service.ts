@@ -11,7 +11,7 @@ import {
   onSnapshot,
   writeBatch,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebase-client";
 import { Notification } from "@/types";
 
 export class FirebaseNotificationService {
@@ -39,11 +39,10 @@ export class FirebaseNotificationService {
           : "Payment Verification Failed ",
         message: isVerified
           ? `Your payment for order ${orderNumber} has been verified successfully. Total: ₹${total}`
-          : `Your payment for order ${orderNumber} could not be verified. ${
-              rejectionReason
-                ? `Reason: ${rejectionReason}`
-                : "Please contact support for assistance."
-            }`,
+          : `Your payment for order ${orderNumber} could not be verified. ${rejectionReason
+            ? `Reason: ${rejectionReason}`
+            : "Please contact support for assistance."
+          }`,
         orderId,
         orderNumber,
         customerId,
@@ -97,13 +96,11 @@ export class FirebaseNotificationService {
             : "Payment Verification Failed ",
           message: isVerified
             ? `Your payment for order ${notificationData.orderNumber} has been verified successfully. Total: ₹${notificationData.total}`
-            : `Your payment for order ${
-                notificationData.orderNumber
-              } could not be verified. ${
-                notificationData.rejectionReason
-                  ? `Reason: ${notificationData.rejectionReason}`
-                  : "Please contact support for assistance."
-              }`,
+            : `Your payment for order ${notificationData.orderNumber
+            } could not be verified. ${notificationData.rejectionReason
+              ? `Reason: ${notificationData.rejectionReason}`
+              : "Please contact support for assistance."
+            }`,
           orderId: notificationData.orderId,
           orderNumber: notificationData.orderNumber,
           customerId: notificationData.customerId,

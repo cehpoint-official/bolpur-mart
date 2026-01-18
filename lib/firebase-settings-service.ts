@@ -1,6 +1,6 @@
 // lib/firebase-settings-service.ts
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from './firebase-client';
 import type { UpiPaymentMethod } from "@/types";
 
 export class FirebaseSettingsService {
@@ -11,17 +11,17 @@ export class FirebaseSettingsService {
   static async getUpiPaymentMethods(): Promise<UpiPaymentMethod[]> {
     try {
       console.log('Fetching UPI methods from collection:', this.upiMethodsCollection);
-      
+
       const upiMethodsRef = collection(db, this.upiMethodsCollection);
       const querySnapshot = await getDocs(upiMethodsRef);
-      
+
       console.log('UPI methods collection size:', querySnapshot.size);
-      
+
       const upiMethods: UpiPaymentMethod[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         console.log('UPI method doc:', doc.id, data);
-        
+
         const upiMethod: UpiPaymentMethod = {
           id: doc.id,
           name: data.name || '',
@@ -31,15 +31,15 @@ export class FirebaseSettingsService {
           createdAt: data.createdAt?.toDate?.() || new Date(),
           updatedAt: data.updatedAt?.toDate?.() || new Date()
         };
-        
+
         // Only include active methods, but default to active if not specified
         if (upiMethod.isActive) {
           upiMethods.push(upiMethod);
         }
       });
-      
+
       console.log('Processed UPI Methods:', upiMethods);
-      
+
       // Sort by name for consistent ordering
       return upiMethods.sort((a, b) => a.name.localeCompare(b.name));
     } catch (error) {
@@ -52,18 +52,18 @@ export class FirebaseSettingsService {
   static async getUpiMethodById(id: string): Promise<UpiPaymentMethod | null> {
     try {
       console.log('Fetching UPI method by ID:', id);
-      
+
       const docRef = doc(db, this.upiMethodsCollection, id);
       const docSnap = await getDoc(docRef);
-      
+
       if (!docSnap.exists()) {
         console.log('No UPI method found with ID:', id);
         return null;
       }
-      
+
       const data = docSnap.data();
       console.log('UPI method data:', data);
-      
+
       return {
         id: docSnap.id,
         name: data.name || '',
@@ -83,12 +83,12 @@ export class FirebaseSettingsService {
   static async getCompanySettings(): Promise<any> {
     try {
       console.log('Fetching company settings');
-      
+
       const settingsDoc = await getDoc(doc(db, this.settingsCollection, 'company'));
-      
+
       if (!settingsDoc.exists()) {
         console.log('No company settings found, returning defaults');
-        
+
         return {
           companyName: 'Bolpur Mart',
           supportPhone: '+91-9876543210',
@@ -103,10 +103,10 @@ export class FirebaseSettingsService {
           }
         };
       }
-      
+
       const data = settingsDoc.data();
       console.log('Company settings:', data);
-      
+
       return data;
     } catch (error) {
       console.error('Error fetching company settings:', error);
@@ -130,10 +130,10 @@ export class FirebaseSettingsService {
   static async getAllSettings(): Promise<any[]> {
     try {
       console.log('Fetching all settings documents');
-      
+
       const settingsRef = collection(db, this.settingsCollection);
       const querySnapshot = await getDocs(settingsRef);
-      
+
       const settings: any[] = [];
       querySnapshot.forEach((doc) => {
         console.log('Settings doc:', doc.id, doc.data());
@@ -142,7 +142,7 @@ export class FirebaseSettingsService {
           ...doc.data()
         });
       });
-      
+
       return settings;
     } catch (error) {
       console.error('Error fetching all settings:', error);
@@ -154,11 +154,11 @@ export class FirebaseSettingsService {
   static async testConnection(): Promise<boolean> {
     try {
       console.log('Testing Firebase connection...');
-      
+
       // Try to fetch a simple collection
       const testRef = collection(db, this.upiMethodsCollection);
       const testSnap = await getDocs(testRef);
-      
+
       console.log('Firebase connection test successful. Collection size:', testSnap.size);
       return true;
     } catch (error) {

@@ -1,5 +1,5 @@
 import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from './firebase-client';
 import type { CartItem, User, Product } from "@/types";
 
 export class FirebaseCartService {
@@ -19,44 +19,44 @@ export class FirebaseCartService {
   }
 
   // Save cart items to user doc
-static async saveCart(userId: string, cartItems: CartItem[]): Promise<void> {
-  try {
-    const userDocRef = doc(db, this.collection, userId);
-    
-    // Clean cart items to remove undefined values
-    const cleanCartItems = cartItems.map(item => ({
-      id: item.id,
-      userId: item.userId,
-      productId: item.productId,
-      quantity: item.quantity,
-      variant: item.variant || null, // Convert undefined to null
-      createdAt: item.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }));
+  static async saveCart(userId: string, cartItems: CartItem[]): Promise<void> {
+    try {
+      const userDocRef = doc(db, this.collection, userId);
 
-    await updateDoc(userDocRef, { 
-      cart: cleanCartItems,
-      updatedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error saving cart:', error);
-    throw error;
+      // Clean cart items to remove undefined values
+      const cleanCartItems = cartItems.map(item => ({
+        id: item.id,
+        userId: item.userId,
+        productId: item.productId,
+        quantity: item.quantity,
+        variant: item.variant || null, // Convert undefined to null
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }));
+
+      await updateDoc(userDocRef, {
+        cart: cleanCartItems,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error saving cart:', error);
+      throw error;
+    }
   }
-}
 
 
   // Add or increase quantity for a product
   static async addItem(userId: string, productId: string, quantity: number, variant?: string): Promise<CartItem[]> {
     try {
       const cart = await this.getCart(userId);
-      const existingItemIndex = cart.findIndex(item => 
+      const existingItemIndex = cart.findIndex(item =>
         item.productId === productId && item.variant === variant
       );
 
       if (existingItemIndex !== -1) {
         cart[existingItemIndex].quantity += quantity;
       } else {
-        const newItem: CartItem = { 
+        const newItem: CartItem = {
           id: `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           userId,
           productId,
@@ -79,7 +79,7 @@ static async saveCart(userId: string, cartItems: CartItem[]): Promise<void> {
   static async updateItem(userId: string, cartItemId: string, quantity: number): Promise<CartItem[]> {
     try {
       let cart = await this.getCart(userId);
-      
+
       if (quantity <= 0) {
         cart = cart.filter(item => item.id !== cartItemId);
       } else {
@@ -136,7 +136,7 @@ static async saveCart(userId: string, cartItems: CartItem[]): Promise<void> {
       guestCartItems.forEach(guestItem => {
         const key = `${guestItem.productId}-${guestItem.variant || ''}`;
         const existing = mergedMap.get(key);
-        
+
         if (existing) {
           existing.quantity += guestItem.quantity;
           existing.updatedAt = new Date().toISOString();

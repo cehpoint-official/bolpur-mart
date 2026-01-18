@@ -3,29 +3,30 @@
 ## PROJECT: bolpur-mart
 ## STACK: Next.js 14.2.16 + TypeScript + Tailwind CSS + Radix UI (shadcn/ui)
 ## ROUTER: App Router
-## CURRENT DB: Firebase (Firestore & Realtime Database)
-- Drizzle ORM and Vercel Postgres are present but commented out in `lib/db.ts`.
-- RTDB is used for messages in `app/api/messages/[chatId]/route.ts`.
-- Firestore is used for products, carts, orders, and services.
+## DATABASE: Firebase (Firestore & Realtime Database) - **Unified**
+- `lib/db.ts` is now a unified wrapper for Firebase services.
+- Vercel Postgres/Drizzle removed to simplify architecture.
+- RTDB handles messages.
+- Firestore handles products, carts, orders, and services.
 
-## CURRENT AUTH: Firebase Auth (Session Cookies)
-- Middleware uses session cookies for auth guarding.
-- `app/api/auth/login/route.ts` handles session creation.
+## AUTHENTICATION: Firebase Auth (Session Cookies) - **Robust**
+- `hooks/useAuth.tsx` provides global auth state and synchronization.
+- Middleware provides secure route guarding using session cookies.
+- Admin SDK handles sensitive operations in API routes.
 
 ## FEATURES:
 - **Chat**: RTDB-based messaging.
 - **E-commerce**: Product catalog, Cart, Wishlist, Orders (Firestore).
 - **Notifications**: Firebase Cloud Messaging (FCM).
 - **AI Integration**: Google Generative AI (Gemini).
-- **Media**: Cloudinary for images/receipts.
+- **Media**: Cloudinary & Firebase Storage ready.
 
-## FIREBASE STATUS: Partial / Pre-integrated
-- Many services exist in `lib/` but there's a need for a unified `useAuth` hook and more robust client/admin singletons.
-- Security rules need to be explicitly defined.
+## FIREBASE STATUS: Completed Integration
+- Singletons for Client (`lib/firebase-client.ts`) and Admin (`lib/firebase-admin.ts`).
+- Security rules defined in `firestore.rules` and `firebase.rules`.
+- Environment template provided in `.env.example`.
 
-## MIGRATION PLAN:
-- **Prisma/Drizzle → Firestore/RTDB**: Already mostly done, but needs cleanup.
-- **Admin SDK**: Ensure no double-init errors (singleton pattern).
-- **Middleware**: Enhance with user role checking if needed.
-- **Rules**: Generate `firebase.rules` and `firestore.rules`.
-- **FCM**: Finalize service worker and token acquisition.
+## NEXT STEPS:
+- **UI Migration**: Replace any remaining S3 upload components with Firebase Storage.
+- **Testing**: Verify FCM token registration and background notifications.
+- **Deployment**: Deploy security rules to Firebase Console.
