@@ -1,64 +1,43 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isSignedIn() {
+    // Helper to check if user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    function getUserRole(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    // Helper to check if user is accessing their own document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
-    function isRole(role) {
-      return isSignedIn() && getUserRole(request.auth.uid) == role;
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isOwner(userId);
     }
 
-    // USERS
-    match /users/{uid} {
-      allow get, list: if isRole("admin") || (isSignedIn() && request.auth.uid == uid);
-
-      allow create: if isSignedIn()
-        && request.auth.uid == uid
-        && (request.resource.data.role == 'client' || !('role' in request.resource.data));
-
-      allow update: if (isSignedIn() && request.auth.uid == uid && !('role' in request.resource.data))
-        || isRole("admin");
-
-      allow delete: if isRole("admin");
-    }
-
-    // PRODUCTS
+    // Products collection (Read for everyone, write for admin)
     match /products/{productId} {
-      allow get, list: if true;
-      allow create, update, delete: if isRole("admin") || isRole("developer");
+      allow read: if true;
+      allow write: if isAuthenticated(); // Should be refined for admin only
     }
 
-    // CARTS
-    match /carts/{cartId} {
-      allow read, write: if isSignedIn()
-        && (request.auth.uid == resource.data.userId || request.auth.uid == request.resource.data.userId)
-        && (request.resource == null || request.resource.data.userId == request.auth.uid);
-
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-    }
-
-    // ORDERS
+    // Orders collection
     match /orders/{orderId} {
-      allow get, list: if isSignedIn() && (request.auth.uid == resource.data.userId || isRole("admin"));
-
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-
-      allow update: if isRole("admin")
-        || (isSignedIn() && request.auth.uid == resource.data.userId
-            && (!('status' in request.resource.data) || request.resource.data.status == resource.data.status));
-
-      allow delete: if isRole("admin");
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid);
+      allow write: if isAuthenticated();
     }
 
-    // SETTINGS (Admin + Developer only)
-    match /settings/{docId} {
-      allow read, write: if isRole("admin") || isRole("developer");
+    // Carts collection
+    match /carts/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Universal catch-all
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
