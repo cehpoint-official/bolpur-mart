@@ -12,14 +12,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { FirebaseAuthService } from "@/lib/firebase-services";
 import { toast } from "@/hooks/use-toast";
-import { 
-  MapPin, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
   Home as HomeIcon,
   Building,
   MapPinIcon,
@@ -47,7 +47,7 @@ const initialAddressForm = {
 // Dynamic Google Maps Geocoding function - COMPLETE
 const getLocationFromCoords = async (lat: number, lng: number) => {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('Google Maps API key not configured');
   }
@@ -56,11 +56,11 @@ const getLocationFromCoords = async (lat: number, lng: number) => {
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&result_type=street_address|sublocality|locality|administrative_area_level_2|administrative_area_level_1|postal_code`
     );
-    
+
     if (!response.ok) throw new Error('Geocoding API request failed');
-    
+
     const data = await response.json();
-    
+
     if (data.status !== 'OK' || !data.results || data.results.length === 0) {
       throw new Error(`Geocoding failed: ${data.status || 'No results'}`);
     }
@@ -73,64 +73,64 @@ const getLocationFromCoords = async (lat: number, lng: number) => {
     let locality = "";
     let district = "";
     let fullFormattedAddress = "";
-    
+
     // Get the most detailed result
     const result = data.results[0];
     const components = result.address_components;
     fullFormattedAddress = result.formatted_address;
-    
+
     console.log('🗺️ Raw geocoding result:', {
       formatted_address: fullFormattedAddress,
       components: components.map((c: any) => ({ name: c.long_name, types: c.types }))
     });
-    
+
     // Parse address components dynamically
     components.forEach((component: any) => {
       const types = component.types;
       const longName = component.long_name;
-      
+
       if (types.includes("postal_code")) {
         pinCode = longName;
       }
-      
-      if (types.includes("sublocality_level_1") || 
-          (types.includes("sublocality") && !subLocality)) {
+
+      if (types.includes("sublocality_level_1") ||
+        (types.includes("sublocality") && !subLocality)) {
         subLocality = longName;
       }
-      
+
       if (types.includes("locality")) {
         locality = longName;
       }
-      
+
       if (types.includes("administrative_area_level_2")) {
         district = longName;
       }
-      
+
       if (types.includes("administrative_area_level_1")) {
         state = longName;
       }
-      
+
       if (types.includes("neighborhood") && !area) {
         area = longName;
       }
-      
-      if (types.includes("political") && 
-          !area && 
-          longName !== state && 
-          longName !== locality && 
-          longName !== district) {
+
+      if (types.includes("political") &&
+        !area &&
+        longName !== state &&
+        longName !== locality &&
+        longName !== district) {
         area = longName;
       }
     });
-    
+
     // Dynamic city selection with priority
     city = subLocality || locality || district || area || "";
-    
+
     // Clean up city name
     if (city) {
       city = city.replace(/ Municipality| Corporation| Panchayat| Block| Gram Panchayat/gi, '').trim();
     }
-    
+
     // Create clean full address
     const addressParts = [];
     if (subLocality) addressParts.push(subLocality);
@@ -144,9 +144,9 @@ const getLocationFromCoords = async (lat: number, lng: number) => {
       }
     }
     if (state) addressParts.push(state);
-    
+
     const cleanFullAddress = addressParts.length > 0 ? addressParts.join(', ') : fullFormattedAddress;
-    
+
     const result_data = {
       city: city || "Unknown",
       state: state || "Unknown",
@@ -154,10 +154,10 @@ const getLocationFromCoords = async (lat: number, lng: number) => {
       fullAddress: cleanFullAddress,
       originalFormatted: fullFormattedAddress
     };
-    
+
     console.log('✅ Processed location data:', result_data);
     return result_data;
-    
+
   } catch (error: any) {
     console.error('❌ Geocoding error:', error);
     throw error;
@@ -189,7 +189,7 @@ export default function SavedAddresses() {
 
   const refreshUserData = async () => {
     if (!user?.uid) return;
-    
+
     try {
       const updatedUser = await FirebaseAuthService.getCurrentUserWithData();
       if (updatedUser?.customData) {
@@ -211,24 +211,24 @@ export default function SavedAddresses() {
   const fetchCurrentLocation = async () => {
     setIsLoadingLocation(true);
     setLocationSkeleton(true);
-    
+
     try {
       // Check sessionStorage first with timestamp
       const storedLocation = sessionStorage.getItem("userLocation");
       const locationTimestamp = sessionStorage.getItem("userLocationTimestamp");
-      
+
       if (storedLocation && locationTimestamp) {
         const timestamp = parseInt(locationTimestamp);
         const now = Date.now();
         const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-        
+
         // Use cached location if it's less than 1 hour old
         if (now - timestamp < oneHour) {
           const { city, state, pinCode, fullAddress } = JSON.parse(storedLocation);
-          
+
           // Simulate loading for better UX
           await new Promise(resolve => setTimeout(resolve, 800));
-          
+
           setAddressForm(prev => ({
             ...prev,
             city,
@@ -236,12 +236,12 @@ export default function SavedAddresses() {
             pinCode: pinCode || prev.pinCode,
             fullAddress: prev.fullAddress || fullAddress
           }));
-          
+
           toast({
             title: "📍 Cached Location Loaded",
             description: `${city}, ${state}${pinCode ? ` - ${pinCode}` : ''}`,
           });
-          
+
           setLocationSkeleton(false);
           setIsLoadingLocation(false);
           return;
@@ -260,8 +260,8 @@ export default function SavedAddresses() {
 
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
-          resolve, 
-          reject, 
+          resolve,
+          reject,
           {
             timeout: 20000, // 20 seconds
             enableHighAccuracy: true,
@@ -271,7 +271,7 @@ export default function SavedAddresses() {
       });
 
       const { latitude, longitude } = position.coords;
-      
+
       toast({
         title: "📡 Location Found",
         description: "Fetching detailed address information...",
@@ -302,10 +302,10 @@ export default function SavedAddresses() {
 
     } catch (error: any) {
       console.error("Location fetch error:", error);
-      
+
       let errorMessage = "Could not detect location.";
       let toastTitle = "⚠️ Location Error";
-      
+
       if (error.code === 1) {
         errorMessage = "Location access denied. Please enable location permissions and try again.";
         toastTitle = "🚫 Permission Denied";
@@ -319,25 +319,25 @@ export default function SavedAddresses() {
         errorMessage = "Location service configuration error.";
         toastTitle = "⚙️ Service Error";
       }
-      
+
       // Use default fallback location
       const defaultLocation = {
         city: "Bolpur",
         state: "West Bengal",
         pinCode: "731204"
       };
-      
+
       setAddressForm(prev => ({
         ...prev,
         ...defaultLocation
       }));
-      
+
       toast({
         title: toastTitle,
         description: `${errorMessage} Using default: Bolpur, West Bengal`,
         variant: "destructive",
       });
-      
+
     } finally {
       setLocationSkeleton(false);
       setIsLoadingLocation(false);
@@ -381,7 +381,7 @@ export default function SavedAddresses() {
 
     if (!addressForm.receiverPhone.trim()) {
       toast({
-        title: "Missing Information", 
+        title: "Missing Information",
         description: "Please enter receiver's phone number.",
         variant: "destructive",
       });
@@ -439,7 +439,7 @@ export default function SavedAddresses() {
       }
 
       await refreshUserData();
-      
+
       setIsDialogOpen(false);
       setAddressForm(initialAddressForm);
       setEditingAddress(null);
@@ -465,14 +465,14 @@ export default function SavedAddresses() {
 
     try {
       await FirebaseAuthService.deleteAddress(addressToDelete);
-      
+
       toast({
         title: " Address Deleted",
         description: "Address has been removed successfully.",
       });
 
       await refreshUserData();
-      
+
     } catch (error: any) {
       console.error('Delete address error:', error);
       toast({
@@ -491,14 +491,14 @@ export default function SavedAddresses() {
 
     try {
       await FirebaseAuthService.setDefaultAddress(addressId);
-      
+
       toast({
         title: " Default Address Set",
         description: "This address is now your default delivery address.",
       });
 
       await refreshUserData();
-      
+
     } catch (error: any) {
       console.error('Set default address error:', error);
       toast({
@@ -545,8 +545,8 @@ export default function SavedAddresses() {
   }
 
   return (
-    <MobileLayout 
-      title="Saved Addresses" 
+    <MobileLayout
+      title="Saved Addresses"
       subtitle="Manage your delivery addresses"
       backPath="/account"
     >
@@ -615,7 +615,7 @@ export default function SavedAddresses() {
                           </Badge>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center space-x-1">
                         <Button
                           variant="ghost"
@@ -718,7 +718,7 @@ export default function SavedAddresses() {
                 {editingAddress ? "Edit Address" : "Add New Address"}
               </DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {/* Address Type */}
               <div>
@@ -783,10 +783,10 @@ export default function SavedAddresses() {
                       </div>
                     )}
                   </Button>
-                  
-                
+
+
                 </div>
-                
+
                 <p className="text-xs text-muted-foreground mt-1">
                   Auto-fill will detect your current location dynamically
                 </p>

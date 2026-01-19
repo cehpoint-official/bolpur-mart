@@ -4,16 +4,17 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { getStorage } from 'firebase-admin/storage'
 import { firebaseAdminApp } from './firebase-admin-config'
 
-// Initialize services using the configured app
-const adminAuth = getAuth(firebaseAdminApp)
-const adminFirestore = getFirestore(firebaseAdminApp)
-const adminStorage = getStorage(firebaseAdminApp)
+// Initialize services using the configured app if it exists
+const adminAuth = firebaseAdminApp ? getAuth(firebaseAdminApp) : null
+const adminFirestore = firebaseAdminApp ? getFirestore(firebaseAdminApp) : null
+const adminStorage = firebaseAdminApp ? getStorage(firebaseAdminApp) : null
 
 // Auth Service Functions
 export class FirebaseAdminAuthService {
   static async verifyIdToken(token: string) {
+    if (!adminAuth) throw new Error('Firebase Admin Auth not initialized');
     try {
-      const decodedToken = await adminAuth.verifyIdToken(token)
+      const decodedToken = await adminAuth!.verifyIdToken(token)
       return decodedToken
     } catch (error) {
       console.error('Token verification failed:', error)
@@ -22,8 +23,9 @@ export class FirebaseAdminAuthService {
   }
 
   static async createCustomToken(uid: string, additionalClaims?: object) {
+    if (!adminAuth) throw new Error('Firebase Admin Auth not initialized');
     try {
-      const customToken = await adminAuth.createCustomToken(uid, additionalClaims)
+      const customToken = await adminAuth!.createCustomToken(uid, additionalClaims)
       return customToken
     } catch (error) {
       console.error('Custom token creation failed:', error)
@@ -32,8 +34,9 @@ export class FirebaseAdminAuthService {
   }
 
   static async getUserById(uid: string) {
+    if (!adminAuth) throw new Error('Firebase Admin Auth not initialized');
     try {
-      const userRecord = await adminAuth.getUser(uid)
+      const userRecord = await adminAuth!.getUser(uid)
       return userRecord
     } catch (error) {
       console.error('Get user failed:', error)
@@ -42,8 +45,9 @@ export class FirebaseAdminAuthService {
   }
 
   static async setCustomUserClaims(uid: string, customClaims: object) {
+    if (!adminAuth) throw new Error('Firebase Admin Auth not initialized');
     try {
-      await adminAuth.setCustomUserClaims(uid, customClaims)
+      await adminAuth!.setCustomUserClaims(uid, customClaims)
       return { success: true, message: 'Custom claims set successfully' }
     } catch (error) {
       console.error('Set custom claims failed:', error)
@@ -52,8 +56,9 @@ export class FirebaseAdminAuthService {
   }
 
   static async deleteUser(uid: string) {
+    if (!adminAuth) throw new Error('Firebase Admin Auth not initialized');
     try {
-      await adminAuth.deleteUser(uid)
+      await adminAuth!.deleteUser(uid)
       return { success: true, message: 'User deleted successfully' }
     } catch (error) {
       console.error('Delete user failed:', error)
@@ -65,8 +70,9 @@ export class FirebaseAdminAuthService {
 // Firestore Service Functions
 export class FirebaseAdminFirestoreService {
   static async getDocument(collection: string, documentId: string) {
+    if (!adminFirestore) throw new Error('Firebase Admin Firestore not initialized');
     try {
-      const docRef = adminFirestore.collection(collection).doc(documentId)
+      const docRef = adminFirestore!.collection(collection).doc(documentId)
       const docSnap = await docRef.get()
 
       if (docSnap.exists) {
@@ -81,8 +87,9 @@ export class FirebaseAdminFirestoreService {
   }
 
   static async addDocument(collection: string, data: any) {
+    if (!adminFirestore) throw new Error('Firebase Admin Firestore not initialized');
     try {
-      const docRef = await adminFirestore.collection(collection).add({
+      const docRef = await adminFirestore!.collection(collection).add({
         ...data,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -95,8 +102,9 @@ export class FirebaseAdminFirestoreService {
   }
 
   static async updateDocument(collection: string, documentId: string, data: any) {
+    if (!adminFirestore) throw new Error('Firebase Admin Firestore not initialized');
     try {
-      const docRef = adminFirestore.collection(collection).doc(documentId)
+      const docRef = adminFirestore!.collection(collection).doc(documentId)
       await docRef.update({
         ...data,
         updatedAt: new Date().toISOString(),
@@ -109,8 +117,9 @@ export class FirebaseAdminFirestoreService {
   }
 
   static async deleteDocument(collection: string, documentId: string) {
+    if (!adminFirestore) throw new Error('Firebase Admin Firestore not initialized');
     try {
-      await adminFirestore.collection(collection).doc(documentId).delete()
+      await adminFirestore!.collection(collection).doc(documentId).delete()
       return { success: true, message: 'Document deleted successfully' }
     } catch (error) {
       console.error('Delete document failed:', error)
@@ -119,8 +128,9 @@ export class FirebaseAdminFirestoreService {
   }
 
   static async getCollection(collection: string, filters?: any[]) {
+    if (!adminFirestore) return [];
     try {
-      let query = adminFirestore.collection(collection)
+      let query: any = adminFirestore!.collection(collection)
 
       // Apply filters if provided
       if (filters && filters.length > 0) {
@@ -130,7 +140,7 @@ export class FirebaseAdminFirestoreService {
       }
 
       const querySnapshot = await query.get()
-      const documents = querySnapshot.docs.map(doc => ({
+      const documents = querySnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
       }))
@@ -143,8 +153,9 @@ export class FirebaseAdminFirestoreService {
   }
 
   static async runTransaction(callback: (transaction: any) => Promise<any>) {
+    if (!adminFirestore) throw new Error('Firebase Admin Firestore not initialized');
     try {
-      return await adminFirestore.runTransaction(callback)
+      return await adminFirestore!.runTransaction(callback)
     } catch (error) {
       console.error('Transaction failed:', error)
       throw error
@@ -176,8 +187,9 @@ export class FirebaseAdminUtilities {
 
   // Batch operations
   static async batchWrite(operations: any[]) {
+    if (!adminFirestore) throw new Error('Firebase Admin Firestore not initialized');
     try {
-      const batch = adminFirestore.batch()
+      const batch = adminFirestore!.batch()
 
       operations.forEach(operation => {
         switch (operation.type) {

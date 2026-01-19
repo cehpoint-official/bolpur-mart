@@ -7,6 +7,7 @@ export class FirebaseCartService {
 
   // Fetch user cart items with product details
   static async getCart(userId: string): Promise<CartItem[]> {
+    if (!db) return [];
     try {
       const userDoc = await getDoc(doc(db, this.collection, userId));
       if (!userDoc.exists()) return [];
@@ -20,6 +21,7 @@ export class FirebaseCartService {
 
   // Save cart items to user doc
   static async saveCart(userId: string, cartItems: CartItem[]): Promise<void> {
+    if (!db) return;
     try {
       const userDocRef = doc(db, this.collection, userId);
 

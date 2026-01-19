@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Make sure you have sonner installed
 import { MobileLayout } from "@/components/layout/MobileLayout";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useOrderStore } from "@/stores/useOrderStore";
 import { StarRating } from "@/components/ui/star-rating";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

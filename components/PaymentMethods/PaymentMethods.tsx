@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { 
+import {
   CreditCard, Plus, Edit, Trash2, Star, Smartphone, Loader2
 } from "lucide-react";
 import type { PaymentMethod } from "@/types";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { FirebaseAuthService } from "@/lib/firebase-services";
 
 const initialPaymentForm = {
@@ -48,7 +48,7 @@ export default function PaymentMethods() {
           const payments = await FirebaseAuthService.getPaymentMethods();
           setPaymentMethods(payments);
           if (user && updateUserData) updateUserData({ ...user.customData, payments });
-        } catch {}
+        } catch { }
       }
       setIsLoading(false);
     };

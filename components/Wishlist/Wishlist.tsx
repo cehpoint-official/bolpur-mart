@@ -9,7 +9,7 @@ import { Heart, Search, Loader2, X } from "lucide-react";
 import type { Product } from "@/types";
 import { ProductCard } from "../ui/product-card";
 import { FirebaseWishlistService } from "@/lib/firebase-wishlist-service";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useWishlistStore } from "@/stores/useWishlistStore";
 
 const ITEMS_PER_PAGE = 10;
@@ -24,7 +24,7 @@ export default function Wishlist() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  
+
   const { user, isAuthenticated } = useAuth();
   const { init: initWishlist } = useWishlistStore();
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -48,10 +48,10 @@ export default function Wishlist() {
         // Guest user - load from localStorage
         const storedWishlist = localStorage.getItem('bolpur-mart-guest-wishlist');
         const guestWishlistIds = storedWishlist ? JSON.parse(storedWishlist) : [];
-        
+
         if (guestWishlistIds.length > 0) {
           const { FirebaseProductService } = await import('@/lib/firebase-products');
-          const productPromises = guestWishlistIds.map((id: string) => 
+          const productPromises = guestWishlistIds.map((id: string) =>
             FirebaseProductService.getProductById(id)
           );
           const fetchedProducts = await Promise.all(productPromises);
@@ -64,7 +64,7 @@ export default function Wishlist() {
 
       setAllWishlistProducts(products);
       setFilteredProducts(products);
-      
+
       // Load first page
       const firstPageProducts = products.slice(0, ITEMS_PER_PAGE);
       setDisplayedProducts(firstPageProducts);
@@ -84,15 +84,15 @@ export default function Wishlist() {
   // Load more products for pagination
   const loadMoreProducts = useCallback((currentPage: number, productsToShow: Product[]) => {
     if (loading || !hasMore) return;
-    
+
     setLoading(true);
-    
+
     // Simulate network delay for better UX
     setTimeout(() => {
       const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
       const endIndex = startIndex + ITEMS_PER_PAGE;
       const nextProducts = productsToShow.slice(startIndex, endIndex);
-      
+
       if (nextProducts.length > 0) {
         setDisplayedProducts(prev => [...prev, ...nextProducts]);
         setPage(prev => prev + 1);
@@ -100,7 +100,7 @@ export default function Wishlist() {
       } else {
         setHasMore(false);
       }
-      
+
       setLoading(false);
     }, 500);
   }, [loading, hasMore]);
@@ -115,33 +115,33 @@ export default function Wishlist() {
   // Handle search with debouncing
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    
+
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     const timeout = setTimeout(() => {
       let filtered: Product[] = [];
-      
+
       if (!query.trim()) {
         filtered = allWishlistProducts;
       } else {
-        filtered = allWishlistProducts.filter(product => 
+        filtered = allWishlistProducts.filter(product =>
           product.name.toLowerCase().includes(query.toLowerCase()) ||
           product.description.toLowerCase().includes(query.toLowerCase()) ||
           product.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
         );
       }
-      
+
       setFilteredProducts(filtered);
-      
+
       // Reset pagination for search results
       const firstPageProducts = filtered.slice(0, ITEMS_PER_PAGE);
       setDisplayedProducts(firstPageProducts);
       setHasMore(filtered.length > ITEMS_PER_PAGE);
       setPage(2);
     }, 300);
-    
+
     setSearchTimeout(timeout);
   }, [searchTimeout, allWishlistProducts]);
 
@@ -149,7 +149,7 @@ export default function Wishlist() {
   const clearSearch = () => {
     setSearchQuery("");
     setFilteredProducts(allWishlistProducts);
-    
+
     // Reset to first page of all products
     const firstPageProducts = allWishlistProducts.slice(0, ITEMS_PER_PAGE);
     setDisplayedProducts(firstPageProducts);
@@ -259,7 +259,7 @@ export default function Wishlist() {
                   {searchQuery ? "No products found" : "No Wishlist Items"}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {searchQuery 
+                  {searchQuery
                     ? `No products match "${searchQuery}". Try a different search term.`
                     : "Start adding products to your wishlist by tapping the heart icon on any product!"
                   }
@@ -269,8 +269,8 @@ export default function Wishlist() {
                     Clear Search
                   </Button>
                 ) : (
-                  <Button 
-                    variant="default" 
+                  <Button
+                    variant="default"
                     onClick={() => window.location.href = "/"}
                     className="bg-primary hover:bg-primary/90"
                   >

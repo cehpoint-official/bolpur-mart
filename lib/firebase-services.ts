@@ -27,7 +27,7 @@ export class FirebaseAuthService {
 
   // Helper function to convert Firebase user to AuthUser
   private static async convertToAuthUser(user: FirebaseUser | null): Promise<AuthUser | null> {
-    if (!user) return null
+    if (!user || !db) return null
 
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid))
@@ -48,6 +48,7 @@ export class FirebaseAuthService {
 
   // Email/Password Sign In
   static async signInWithEmailPassword(email: string, password: string): Promise<UserCredential> {
+    if (!auth || !db) throw new Error('Firebase is not initialized');
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
 
@@ -79,6 +80,7 @@ export class FirebaseAuthService {
     password: string,
     name: string
   ): Promise<UserCredential> {
+    if (!auth || !db) throw new Error('Firebase is not initialized');
     try {
       // Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
@@ -130,6 +132,7 @@ export class FirebaseAuthService {
 
   // Google Sign In - Preserves User Customizations
   static async signInWithGoogle(): Promise<UserCredential> {
+    if (!auth || !db) throw new Error('Firebase is not initialized');
     try {
       this.googleProvider.setCustomParameters({
         prompt: 'select_account'
@@ -209,9 +212,10 @@ export class FirebaseAuthService {
 
   // Sign Out
   static async signOut(): Promise<void> {
+    if (!auth) return;
     try {
       // Update last logout time before signing out
-      if (auth.currentUser) {
+      if (auth.currentUser && db) {
         const userDocRef = doc(db, 'users', auth.currentUser.uid)
         await updateDoc(userDocRef, {
           lastLogoutAt: new Date().toISOString(),
@@ -221,7 +225,7 @@ export class FirebaseAuthService {
         })
       }
 
-      await signOut(auth)
+      if (auth) await signOut(auth)
       TokenManager.clearAuthData()
     } catch (error: any) {
       console.error('Sign out error:', error)
@@ -239,6 +243,10 @@ export class FirebaseAuthService {
 
   // Auth state listener
   static onAuthStateChanged(callback: (user: AuthUser | null) => void) {
+    if (!auth) {
+      callback(null);
+      return () => { };
+    }
     return onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {

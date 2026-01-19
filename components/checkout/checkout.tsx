@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { FirebaseProductService } from "@/lib/firebase-products";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useCartStore } from "@/stores/useCartStore";
 import { useOrderStore } from "@/stores/useOrderStore";
 import { OrderConfirmationDialog } from "@/components/ui/order-confirmation-dialog";

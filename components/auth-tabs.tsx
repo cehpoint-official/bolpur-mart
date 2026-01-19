@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AuthTabs() {
   const router = useRouter();
@@ -29,12 +29,12 @@ export function AuthTabs() {
     signinErrors,
     signupErrors,
     generalError,
-    
+
     // Loading states
     isSigningIn,
     isSigningUp,
     isGoogleAuth,
-    
+
     // Actions
     signin,
     signup,
@@ -139,7 +139,7 @@ export function AuthTabs() {
   // Real-time field validation
   const handleSigninFieldChange = (field: keyof typeof signinForm, value: any) => {
     updateSigninForm(field, value);
-    
+
     // Validate on blur for better UX
     setTimeout(() => {
       validateSigninField(field, value);
@@ -148,7 +148,7 @@ export function AuthTabs() {
 
   const handleSignupFieldChange = (field: keyof typeof signupForm, value: any) => {
     updateSignupForm(field, value);
-    
+
     // Validate on blur for better UX
     setTimeout(() => {
       validateSignupField(field, value);
@@ -157,8 +157,8 @@ export function AuthTabs() {
 
   return (
     <div className="w-full">
-      <Tabs 
-        value={currentTab} 
+      <Tabs
+        value={currentTab}
         onValueChange={(value) => setCurrentTab(value as 'signin' | 'signup')}
         className="w-full"
       >
@@ -205,9 +205,8 @@ export function AuthTabs() {
                     value={signinForm.email}
                     onChange={(e) => handleSigninFieldChange('email', e.target.value)}
                     onBlur={(e) => validateSigninField('email', e.target.value)}
-                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${
-                      signinErrors.email ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signinErrors.email ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
                     disabled={isSigningIn}
                   />
                   {signinErrors.email && (
@@ -231,9 +230,8 @@ export function AuthTabs() {
                       value={signinForm.password}
                       onChange={(e) => handleSigninFieldChange('password', e.target.value)}
                       onBlur={(e) => validateSigninField('password', e.target.value)}
-                      className={`h-12 bg-input border-border focus:ring-ring pr-10 text-foreground placeholder:text-muted-foreground ${
-                        signinErrors.password ? 'border-red-500 focus:ring-red-500' : ''
-                      }`}
+                      className={`h-12 bg-input border-border focus:ring-ring pr-10 text-foreground placeholder:text-muted-foreground ${signinErrors.password ? 'border-red-500 focus:ring-red-500' : ''
+                        }`}
                       disabled={isSigningIn}
                     />
                   </div>
@@ -245,10 +243,10 @@ export function AuthTabs() {
                 {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="remember" 
+                    <Checkbox
+                      id="remember"
                       checked={signinForm.rememberMe}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handleSigninFieldChange('rememberMe', checked)
                       }
                       disabled={isSigningIn}
@@ -278,7 +276,7 @@ export function AuthTabs() {
                 )}
 
                 {/* Sign In Button */}
-                <Button 
+                <Button
                   type="submit"
                   className="w-full h-12 bg-amber-400 text-accent-foreground hover:bg-amber-400/80 font-medium"
                   disabled={isSigningIn || isGoogleAuth}
@@ -375,9 +373,8 @@ export function AuthTabs() {
                     value={signupForm.name}
                     onChange={(e) => handleSignupFieldChange('name', e.target.value)}
                     onBlur={(e) => validateSignupField('name', e.target.value)}
-                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${
-                      signupErrors.name ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.name ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
                     disabled={isSigningUp}
                   />
                   {signupErrors.name && (
@@ -400,9 +397,8 @@ export function AuthTabs() {
                     value={signupForm.email}
                     onChange={(e) => handleSignupFieldChange('email', e.target.value)}
                     onBlur={(e) => validateSignupField('email', e.target.value)}
-                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${
-                      signupErrors.email ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.email ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
                     disabled={isSigningUp}
                   />
                   {signupErrors.email && (
@@ -425,9 +421,8 @@ export function AuthTabs() {
                     value={signupForm.password}
                     onChange={(e) => handleSignupFieldChange('password', e.target.value)}
                     onBlur={(e) => validateSignupField('password', e.target.value)}
-                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${
-                      signupErrors.password ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.password ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
                     disabled={isSigningUp}
                   />
                   {signupErrors.password && (
@@ -450,9 +445,8 @@ export function AuthTabs() {
                     value={signupForm.confirmPassword}
                     onChange={(e) => handleSignupFieldChange('confirmPassword', e.target.value)}
                     onBlur={(e) => validateSignupField('confirmPassword', e.target.value)}
-                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${
-                      signupErrors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
                     disabled={isSigningUp}
                   />
                   {signupErrors.confirmPassword && (
@@ -463,10 +457,10 @@ export function AuthTabs() {
                 {/* Terms & Conditions */}
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="terms" 
+                    <Checkbox
+                      id="terms"
                       checked={signupForm.acceptTerms}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handleSignupFieldChange('acceptTerms', checked)
                       }
                       disabled={isSigningUp}
@@ -498,7 +492,7 @@ export function AuthTabs() {
                 )}
 
                 {/* Create Account Button */}
-                <Button 
+                <Button
                   type="submit"
                   className="w-full h-12 bg-accent text-accent-foreground hover:bg-accent/90 font-medium"
                   disabled={isSigningUp || isGoogleAuth}

@@ -9,13 +9,18 @@ const firebaseAdminConfig = {
 export function getFirebaseAdmin() {
     if (!admin.apps.length) {
         if (!firebaseAdminConfig.projectId || !firebaseAdminConfig.clientEmail || !firebaseAdminConfig.privateKey) {
-            console.error("Firebase Admin config is missing environment variables.");
+            console.error("Firebase Admin config is missing environment variables. Firebase Admin features will be disabled.");
+            return admin; // Return uninitialized admin object (will error on call but not on init)
         }
 
-        admin.initializeApp({
-            credential: admin.credential.cert(firebaseAdminConfig),
-            databaseURL: `https://${firebaseAdminConfig.projectId}-default-rtdb.firebaseio.com`,
-        });
+        try {
+            admin.initializeApp({
+                credential: admin.credential.cert(firebaseAdminConfig as any),
+                databaseURL: `https://${firebaseAdminConfig.projectId}-default-rtdb.firebaseio.com`,
+            });
+        } catch (error) {
+            console.error("Firebase Admin initialization failed:", error);
+        }
     }
     return admin;
 }

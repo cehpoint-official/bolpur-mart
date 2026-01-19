@@ -40,12 +40,14 @@ function toEntity<T>(ref: DocumentReference<DocumentData>, data: DocumentData): 
 }
 
 async function getDocData<T>(ref: DocumentReference<DocumentData>): Promise<(T & { id: string }) | undefined> {
+  if (!db) return undefined;
   const snap = await getDoc(ref);
   if (!snap.exists()) return undefined;
   return { id: snap.id, ...(snap.data() as T) } as T & { id: string };
 }
 
 async function getQueryDocs<T>(q: any): Promise<(T & { id: string })[]> {
+  if (!db) return [];
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as T) })) as (T & { id: string })[];
 }
@@ -53,12 +55,13 @@ async function getQueryDocs<T>(q: any): Promise<(T & { id: string })[]> {
 class Storage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
+    if (!db) return undefined;
     const snap = await getDoc(doc(db, "users", id));
     return snap.exists() ? ({ id: snap.id, ...snap.data() } as User) : undefined;
-
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    if (!db) return undefined;
     const q = query(collection(db, "users"), where("email", "==", email));
     const snap = await getDocs(q);
     if (snap.empty) return undefined;
@@ -67,17 +70,18 @@ class Storage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
+    if (!db) throw new Error("Database not initialized");
     const ref = await addDoc(collection(db, "users"), user);
     const snap = await getDoc(ref);
     return { id: snap.id, ...snap.data() } as User;
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    if (!db) return undefined;
     const ref = doc(db, "users", id);
     await updateDoc(ref, updates);
     const snap = await getDoc(ref);
     return snap.exists() ? ({ id: snap.id, ...snap.data() } as User) : undefined;
-
   }
 
   // Categories

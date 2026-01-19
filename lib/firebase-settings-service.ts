@@ -9,6 +9,7 @@ export class FirebaseSettingsService {
 
   // Get all UPI payment methods
   static async getUpiPaymentMethods(): Promise<UpiPaymentMethod[]> {
+    if (!db) return [];
     try {
       console.log('Fetching UPI methods from collection:', this.upiMethodsCollection);
 
@@ -50,6 +51,7 @@ export class FirebaseSettingsService {
 
   // Get single UPI method by ID
   static async getUpiMethodById(id: string): Promise<UpiPaymentMethod | null> {
+    if (!db) return null;
     try {
       console.log('Fetching UPI method by ID:', id);
 
@@ -81,6 +83,22 @@ export class FirebaseSettingsService {
 
   // Get company settings
   static async getCompanySettings(): Promise<any> {
+    const defaultSettings = {
+      companyName: 'Bolpur Mart',
+      supportPhone: '+91-9876543210',
+      supportEmail: 'support@bolpurmart.com',
+      deliveryRadius: 10,
+      minOrderAmount: 50,
+      maxOrderAmount: 5000,
+      deliveryCharges: {
+        immediate: 50,
+        express: 30,
+        scheduled: 0
+      }
+    };
+
+    if (!db) return defaultSettings;
+
     try {
       console.log('Fetching company settings');
 
@@ -128,6 +146,7 @@ export class FirebaseSettingsService {
 
   // Get all settings documents (for debugging)
   static async getAllSettings(): Promise<any[]> {
+    if (!db) return [];
     try {
       console.log('Fetching all settings documents');
 
@@ -152,6 +171,7 @@ export class FirebaseSettingsService {
 
   // Test connection to Firebase
   static async testConnection(): Promise<boolean> {
+    if (!db) return false;
     try {
       console.log('Testing Firebase connection...');
 

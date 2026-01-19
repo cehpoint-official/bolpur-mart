@@ -9,6 +9,7 @@ export class FirebaseWishlistService {
 
   // Add item to wishlist
   static async addToWishlist(userId: string, productId: string): Promise<void> {
+    if (!db) return;
     try {
       const wishlistRef = collection(db, this.collection);
       const q = query(wishlistRef, where('userId', '==', userId), where('productId', '==', productId));
@@ -34,6 +35,7 @@ export class FirebaseWishlistService {
 
   // Remove item from wishlist
   static async removeFromWishlist(userId: string, productId: string): Promise<void> {
+    if (!db) return;
     try {
       const wishlistRef = collection(db, this.collection);
       const q = query(wishlistRef, where('userId', '==', userId), where('productId', '==', productId));
@@ -51,6 +53,7 @@ export class FirebaseWishlistService {
 
   // Check if item is in wishlist
   static async isInWishlist(userId: string, productId: string): Promise<boolean> {
+    if (!db) return false;
     try {
       const wishlistRef = collection(db, this.collection);
       const q = query(wishlistRef, where('userId', '==', userId), where('productId', '==', productId));
@@ -65,6 +68,7 @@ export class FirebaseWishlistService {
 
   // Get user's wishlist items
   static async getUserWishlist(userId: string): Promise<WishlistItem[]> {
+    if (!db) return [];
     try {
       const wishlistRef = collection(db, this.collection);
       const q = query(wishlistRef, where('userId', '==', userId));
@@ -115,6 +119,7 @@ export class FirebaseWishlistService {
 
   // Clear entire wishlist
   static async clearWishlist(userId: string): Promise<void> {
+    if (!db) return;
     try {
       const wishlistRef = collection(db, this.collection);
       const q = query(wishlistRef, where('userId', '==', userId));

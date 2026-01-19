@@ -1,9 +1,9 @@
-import { 
-  initializeApp, 
-  getApps, 
-  cert, 
+import {
+  initializeApp,
+  getApps,
+  cert,
   ServiceAccount,
-  App 
+  App
 } from 'firebase-admin/app'
 
 // Service account interface
@@ -14,31 +14,33 @@ interface FirebaseAdminConfig {
 }
 
 // Get configuration from environment variables
-function getFirebaseAdminConfig(): FirebaseAdminConfig {
+function getFirebaseAdminConfig(): FirebaseAdminConfig | null {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL  
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
 
   if (!projectId || !clientEmail || !privateKey) {
-    throw new Error(
-      'Missing Firebase Admin configuration. Please check your environment variables:\n' +
-      '- FIREBASE_ADMIN_PROJECT_ID\n' +
-      '- FIREBASE_ADMIN_CLIENT_EMAIL\n' + 
-      '- FIREBASE_ADMIN_PRIVATE_KEY'
+    console.error(
+      'Missing Firebase Admin configuration. Firebase Admin features will be disabled.\n' +
+      'Missing variables: ' +
+      (!projectId ? 'FIREBASE_ADMIN_PROJECT_ID ' : '') +
+      (!clientEmail ? 'FIREBASE_ADMIN_CLIENT_EMAIL ' : '') +
+      (!privateKey ? 'FIREBASE_ADMIN_PRIVATE_KEY' : '')
     )
+    return null;
   }
 
   return {
     projectId,
     clientEmail,
-    privateKey: privateKey.replace(/\\n/g, '\n'), 
+    privateKey: privateKey.replace(/\\n/g, '\n'),
   }
 }
 
 // Initialize Firebase Admin App (Singleton Pattern)
-function initializeFirebaseAdminApp(): App {
+function initializeFirebaseAdminApp(): App | null {
   const existingApps = getApps()
-  
+
   // Return existing app if already initialized
   if (existingApps.length > 0) {
     return existingApps[0]
@@ -46,7 +48,8 @@ function initializeFirebaseAdminApp(): App {
 
   try {
     const config = getFirebaseAdminConfig()
-    
+    if (!config) return null;
+
     const serviceAccount: ServiceAccount = {
       projectId: config.projectId,
       clientEmail: config.clientEmail,
@@ -64,7 +67,7 @@ function initializeFirebaseAdminApp(): App {
 
   } catch (error) {
     console.error(' Firebase Admin initialization failed:', error)
-    throw new Error(`Firebase Admin initialization failed: ${error}`)
+    return null;
   }
 }
 

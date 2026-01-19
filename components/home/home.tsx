@@ -37,7 +37,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useTimeSlot } from "@/hooks/use-time-slot";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { FirebaseProductService } from "@/lib/firebase-products";
 import type { Product, CategoryReference } from "@/types";
 import { NotificationBell } from "../ui/notification-bell";

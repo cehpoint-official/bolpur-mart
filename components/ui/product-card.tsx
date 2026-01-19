@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Minus, Plus, ShoppingCart, Star, Clock, Heart, ShoppingBag, MapPin } from "lucide-react";
 import { useCartStore } from "@/stores/useCartStore";
 import { useWishlistStore } from "@/stores/useWishlistStore";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/types";
@@ -28,7 +28,7 @@ export function ProductCard({ product, userId }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false); // Individual loading state
-  
+
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
@@ -107,7 +107,7 @@ export function ProductCard({ product, userId }: ProductCardProps) {
         description: "Please login to add items to your wishlist.",
         variant: "destructive"
       });
-      
+
       // Navigate to auth page
       router.push("/auth");
       return;
@@ -137,8 +137,8 @@ export function ProductCard({ product, userId }: ProductCardProps) {
 
   // Image handling - use imageUrl from product
   const productImage = product.imageUrl || "";
-  const optimizedImageUrl = productImage && !imageError 
-    ? getOptimizedImageUrl(productImage) 
+  const optimizedImageUrl = productImage && !imageError
+    ? getOptimizedImageUrl(productImage)
     : getPlaceholderUrl(400, 250);
 
   // Format price display
@@ -169,7 +169,7 @@ export function ProductCard({ product, userId }: ProductCardProps) {
             data-testid={`product-image-${product.id}`}
             sizes="(max-width: 768px) 50vw, 25vw"
           />
-          
+
           {!imageLoaded && !imageError && (
             <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
               <ShoppingBag className="w-8 h-8 text-muted-foreground" />
@@ -217,10 +217,9 @@ export function ProductCard({ product, userId }: ProductCardProps) {
           {isWishlistLoading ? (
             <div className="w-4 h-4 border border-gray-400 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Heart 
-              className={`h-4 w-4 transition-colors ${
-                isWishlisted ? "text-red-500 fill-current" : "text-muted-foreground"
-              }`} 
+            <Heart
+              className={`h-4 w-4 transition-colors ${isWishlisted ? "text-red-500 fill-current" : "text-muted-foreground"
+                }`}
             />
           )}
         </Button>
@@ -228,16 +227,16 @@ export function ProductCard({ product, userId }: ProductCardProps) {
 
       <CardContent className="p-3">
         {/* Product Name */}
-        <h3 
-          className="font-semibold text-sm mb-1 line-clamp-2 leading-tight" 
+        <h3
+          className="font-semibold text-sm mb-1 line-clamp-2 leading-tight"
           data-testid={`product-name-${product.id}`}
         >
           {product.name}
         </h3>
 
         {/* Product Description */}
-        <p 
-          className="text-xs text-muted-foreground mb-2 line-clamp-2 leading-relaxed" 
+        <p
+          className="text-xs text-muted-foreground mb-2 line-clamp-2 leading-relaxed"
           data-testid={`product-description-${product.id}`}
         >
           {product.description}
@@ -251,18 +250,17 @@ export function ProductCard({ product, userId }: ProductCardProps) {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-3 w-3 ${
-                    i < Math.floor(averageRating) 
-                      ? "text-yellow-500 fill-current" 
-                      : i < averageRating 
-                      ? "text-yellow-500 fill-current opacity-50"
-                      : "text-gray-300"
-                  }`}
+                  className={`h-3 w-3 ${i < Math.floor(averageRating)
+                      ? "text-yellow-500 fill-current"
+                      : i < averageRating
+                        ? "text-yellow-500 fill-current opacity-50"
+                        : "text-gray-300"
+                    }`}
                 />
               ))}
             </div>
-            <span 
-              className="text-xs text-muted-foreground ml-1 font-medium" 
+            <span
+              className="text-xs text-muted-foreground ml-1 font-medium"
               data-testid={`product-rating-${product.id}`}
             >
               {roundedRating}
@@ -288,8 +286,8 @@ export function ProductCard({ product, userId }: ProductCardProps) {
           {/* Price Display */}
           <div className="flex flex-col">
             <div className="flex items-center space-x-1">
-              <span 
-                className="font-bold text-primary text-sm" 
+              <span
+                className="font-bold text-primary text-sm"
                 data-testid={`product-price-${product.id}`}
               >
                 ₹{formatPrice(hasDiscount && discountedPrice ? discountedPrice : originalPrice)}
@@ -322,8 +320,8 @@ export function ProductCard({ product, userId }: ProductCardProps) {
                   <Minus className="h-3 w-3" />
                 </Button>
 
-                <span 
-                  className="w-6 text-center font-semibold text-sm" 
+                <span
+                  className="w-6 text-center font-semibold text-sm"
                   data-testid={`product-quantity-${product.id}`}
                 >
                   {quantity}

@@ -26,7 +26,7 @@ import { useTimeSlot } from "@/hooks/use-time-slot";
 import { FirebaseProductService } from "@/lib/firebase-products";
 import type { Product, CategoryReference } from "@/types";
 import { useCartStore } from "@/stores/useCartStore";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Search() {
   const router = useRouter();

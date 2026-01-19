@@ -19,7 +19,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { FirebaseNotificationService } from "@/lib/firebase-notification-service";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Notification } from "@/types";
 
@@ -483,8 +483,8 @@ export function NotificationBell({
                   {unreadCount > 0
                     ? `${unreadCount} new notifications`
                     : notifications.length > 0
-                    ? `${notifications.length} total notifications`
-                    : "All caught up!"}
+                      ? `${notifications.length} total notifications`
+                      : "All caught up!"}
                 </p>
               </div>
               <Button
@@ -530,12 +530,11 @@ export function NotificationBell({
                       key={notification.id}
                       className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${getNotificationBackgroundColor(
                         notification
-                      )} ${
-                        index === displayedNotifications.length - 1 &&
-                        !hasMoreNotifications
+                      )} ${index === displayedNotifications.length - 1 &&
+                          !hasMoreNotifications
                           ? "border-b-0"
                           : ""
-                      }`}
+                        }`}
                       onClick={() => handleNotificationItemClick(notification)}
                     >
                       <div className="flex items-start space-x-3">
@@ -581,12 +580,11 @@ export function NotificationBell({
                                 </span>
                                 {notification.verificationStatus && (
                                   <span
-                                    className={`text-xs px-2 py-0.5 rounded-full ${
-                                      notification.verificationStatus ===
-                                      "verified"
+                                    className={`text-xs px-2 py-0.5 rounded-full ${notification.verificationStatus ===
+                                        "verified"
                                         ? "bg-green-100 text-green-600"
                                         : "bg-red-100 text-red-600"
-                                    }`}
+                                      }`}
                                   >
                                     {notification.verificationStatus}
                                   </span>

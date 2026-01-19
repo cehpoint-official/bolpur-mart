@@ -14,16 +14,39 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const rtdb = getDatabase(app);
-const storage = getStorage(app);
+// Initialize Firebase only if API key is present
+let app: any;
+let auth: any;
+let db: any;
+let rtdb: any;
+let storage: any;
+
+if (typeof window !== "undefined" && !process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+    console.warn("Firebase API Key is missing. Firebase features will be disabled.");
+}
+
+try {
+    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+        app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        rtdb = getDatabase(app);
+        storage = getStorage(app);
+    } else {
+        // Provide dummy or null values to prevent crashing
+        app = null;
+        auth = null;
+        db = null;
+        rtdb = null;
+        storage = null;
+    }
+} catch (error) {
+    console.error("Firebase initialization failed:", error);
+}
 
 // Messaging is only supported in browser environments
 const messaging = async () => {
-    if (typeof window === "undefined") return null;
+    if (typeof window === "undefined" || !app) return null;
     const supported = await isSupported();
     return supported ? getMessaging(app) : null;
 };
