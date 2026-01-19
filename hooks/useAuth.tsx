@@ -1,32 +1,22 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase-client";
+import { useEffect, createContext, useContext } from "react";
+import { useAuthStore } from "@/stores/auth-store";
+import { AuthStore } from "@/types/auth";
+import { FirebaseAuthService } from "@/lib/firebase-services";
 
-interface AuthContextType {
-    user: User | null;
-    loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    loading: true,
-});
+const AuthContext = createContext<AuthStore | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const authStore = useAuthStore();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setUser(user);
-            setLoading(false);
-
-            try {
-                if (user) {
+        // Use the guarded service method instead of raw Firebase
+        const unsubscribe = FirebaseAuthService.onAuthStateChanged(async (firebaseUser) => {
+            if (firebaseUser) {
+                try {
                     // Sync session cookie with backend
-                    const idToken = await user.getIdToken();
+                    const idToken = await firebaseUser.getIdToken();
                     await fetch("/api/auth/login", {
                         method: "POST",
                         headers: {
@@ -34,12 +24,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         },
                         body: JSON.stringify({ idToken }),
                     });
-                } else {
+                } catch (error) {
+                    console.error("Failed to sync session:", error);
+                }
+            } else {
+                try {
                     // Clear session cookie
                     await fetch("/api/auth/login", { method: "DELETE" });
+                } catch (error) {
+                    console.error("Failed to clear session:", error);
                 }
-            } catch (error) {
-                console.error("Failed to sync session:", error);
             }
         });
 
@@ -47,10 +41,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading }}>
+        <AuthContext.Provider value={authStore}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    return context;
+};

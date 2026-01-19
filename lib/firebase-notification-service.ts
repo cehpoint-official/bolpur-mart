@@ -27,6 +27,7 @@ export class FirebaseNotificationService {
     total: number,
     rejectionReason?: string
   ): Promise<void> {
+    if (!db) return;
     try {
       const notificationsRef = collection(db, this.notificationsCollection);
 
@@ -81,6 +82,7 @@ export class FirebaseNotificationService {
       rejectionReason?: string;
     }>
   ): Promise<void> {
+    if (!db) return;
     try {
       const batch = writeBatch(db);
       const notificationsRef = collection(db, this.notificationsCollection);
@@ -134,6 +136,7 @@ export class FirebaseNotificationService {
     userId: string,
     limitCount: number = 20
   ): Promise<Notification[]> {
+    if (!db) return [];
     try {
       const notificationsRef = collection(db, this.notificationsCollection);
       const q = query(
@@ -173,6 +176,7 @@ export class FirebaseNotificationService {
     callback: (notifications: Notification[]) => void,
     onError?: (error: Error) => void
   ) {
+    if (!db) return () => { };
     const notificationsRef = collection(db, this.notificationsCollection);
     const q = query(
       notificationsRef,
@@ -206,6 +210,7 @@ export class FirebaseNotificationService {
 
   // Mark notification as read
   static async markNotificationAsRead(notificationId: string): Promise<void> {
+    if (!db) return;
     try {
       const notificationRef = doc(
         db,
@@ -224,6 +229,7 @@ export class FirebaseNotificationService {
 
   // Mark all notifications as read for a user
   static async markAllNotificationsAsRead(userId: string): Promise<void> {
+    if (!db) return;
     try {
       const notificationsRef = collection(db, this.notificationsCollection);
       const q = query(
@@ -252,6 +258,7 @@ export class FirebaseNotificationService {
 
   // Get unread notification count
   static async getUnreadNotificationCount(userId: string): Promise<number> {
+    if (!db) return 0;
     try {
       const notificationsRef = collection(db, this.notificationsCollection);
       const q = query(
@@ -273,6 +280,7 @@ export class FirebaseNotificationService {
   static async createNotification(
     notification: Omit<Notification, "id" | "createdAt">
   ): Promise<void> {
+    if (!db) return;
     try {
       const notificationsRef = collection(db, this.notificationsCollection);
       await addDoc(notificationsRef, {

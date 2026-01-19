@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home, Search, Receipt, User } from "lucide-react";
 
@@ -8,27 +9,19 @@ interface MobileLayoutProps {
   subtitle?: string;
   showBackButton?: boolean;
   backPath?: string;
-  showBottomNav?: boolean; // New optional field
+  showBottomNav?: boolean;
   currentPage?: 'home' | 'search' | 'orders' | 'account';
 }
 
-export function MobileLayout({ 
-  children, 
-  title, 
-  subtitle, 
-  showBackButton = true, 
+export function MobileLayout({
+  children,
+  title,
+  subtitle,
+  showBackButton = true,
   backPath = "/account",
-  showBottomNav = true, // Default to true for backward compatibility
+  showBottomNav = true,
   currentPage = 'account'
 }: MobileLayoutProps) {
-  
-  const handleNavigation = (path: string) => {
-    window.location.href = path;
-  };
-
-  const handleBackNavigation = () => {
-    window.location.href = backPath;
-  };
 
   return (
     <div className="mobile-container">
@@ -41,10 +34,12 @@ export function MobileLayout({
                 variant="ghost"
                 size="icon"
                 className="rounded-full"
-                onClick={handleBackNavigation}
+                asChild
                 data-testid="back-button"
               >
-                <ArrowLeft size={20} />
+                <Link href={backPath}>
+                  <ArrowLeft size={20} />
+                </Link>
               </Button>
             )}
             <div>
@@ -71,47 +66,51 @@ export function MobileLayout({
           <div className="flex items-center justify-around py-3">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center ${
-                currentPage === 'home' ? 'text-primary' : 'text-muted-foreground'
-              }`}
-              onClick={() => handleNavigation("/")}
+              className={`flex flex-col items-center ${currentPage === 'home' ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              asChild
               data-testid="nav-home"
             >
-              <Home size={20} />
-              <span className="text-xs mt-1">Home</span>
+              <Link href="/">
+                <Home size={20} />
+                <span className="text-xs mt-1">Home</span>
+              </Link>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center ${
-                currentPage === 'search' ? 'text-primary' : 'text-muted-foreground'
-              }`}
-              onClick={() => handleNavigation("/search")}
+              className={`flex flex-col items-center ${currentPage === 'search' ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              asChild
               data-testid="nav-search"
             >
-              <Search size={20} />
-              <span className="text-xs mt-1">Search</span>
+              <Link href="/search">
+                <Search size={20} />
+                <span className="text-xs mt-1">Search</span>
+              </Link>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center ${
-                currentPage === 'orders' ? 'text-primary' : 'text-muted-foreground'
-              }`}
-              onClick={() => handleNavigation("/orders")}
+              className={`flex flex-col items-center ${currentPage === 'orders' ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              asChild
               data-testid="nav-orders"
             >
-              <Receipt size={20} />
-              <span className="text-xs mt-1">Orders</span>
+              <Link href="/orders">
+                <Receipt size={20} />
+                <span className="text-xs mt-1">Orders</span>
+              </Link>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center ${
-                currentPage === 'account' ? 'text-primary' : 'text-muted-foreground'
-              }`}
-              onClick={() => handleNavigation("/account")}
+              className={`flex flex-col items-center ${currentPage === 'account' ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              asChild
               data-testid="nav-account"
             >
-              <User size={20} />
-              <span className="text-xs mt-1">Account</span>
+              <Link href="/account">
+                <User size={20} />
+                <span className="text-xs mt-1">Account</span>
+              </Link>
             </Button>
           </div>
         </nav>

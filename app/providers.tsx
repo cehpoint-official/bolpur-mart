@@ -6,15 +6,19 @@ import { queryClient } from "@/lib/queryClient"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/toaster"
 
+import { AuthProvider } from "@/hooks/useAuth"
+
 export default function Providers({ children }: { children: ReactNode }) {
   console.log(process.env.NODE_ENV);
-  
+
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {children}
-        <Toaster />
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
+      </AuthProvider>
       {/* Add React Query DevTools in development */}
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} />

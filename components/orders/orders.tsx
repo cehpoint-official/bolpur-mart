@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -420,12 +421,14 @@ export default function Orders() {
           once you make your first purchase.
         </p>
         <Button
-          onClick={() => (window.location.href = "/")}
+          asChild
           className="px-8 py-2"
           data-testid="start-shopping-button"
         >
-          <ShoppingBag className="w-4 h-4 mr-2" />
-          Start Shopping
+          <Link href="/">
+            <ShoppingBag className="w-4 h-4 mr-2" />
+            Start Shopping
+          </Link>
         </Button>
       </div>
     </div>

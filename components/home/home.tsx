@@ -4,6 +4,7 @@ import type React from "react";
 import { useCartStore } from "@/stores/useCartStore";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,11 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { init: initCart } = useCartStore();
   const { currentTimeSlot } = useTimeSlot();
@@ -419,7 +425,7 @@ export default function Home() {
             <NotificationBell />
 
             {/* User Profile or Login Button */}
-            {authLoading ? (
+            {!mounted || authLoading ? (
               <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
             ) : isAuthenticated && user ? (
               <Button
@@ -789,29 +795,35 @@ export default function Home() {
           <Button
             variant="ghost"
             className="flex flex-col items-center text-muted-foreground"
-            onClick={() => handleNavigation("/search")}
+            asChild
             data-testid="nav-search"
           >
-            <Search size={20} />
-            <span className="text-xs mt-1">Search</span>
+            <Link href="/search">
+              <Search size={20} />
+              <span className="text-xs mt-1">Search</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
             className="flex flex-col items-center text-muted-foreground"
-            onClick={() => handleNavigation("/orders")}
+            asChild
             data-testid="nav-orders"
           >
-            <ClipboardList size={20} />
-            <span className="text-xs mt-1">Orders</span>
+            <Link href="/orders">
+              <ClipboardList size={20} />
+              <span className="text-xs mt-1">Orders</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
             className="flex flex-col items-center text-muted-foreground"
-            onClick={() => handleNavigation("/account")}
+            asChild
             data-testid="nav-account"
           >
-            <User size={20} />
-            <span className="text-xs mt-1">Account</span>
+            <Link href="/account">
+              <User size={20} />
+              <span className="text-xs mt-1">Account</span>
+            </Link>
           </Button>
         </div>
       </nav>

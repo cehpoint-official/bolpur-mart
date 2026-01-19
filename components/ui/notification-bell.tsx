@@ -56,7 +56,6 @@ export function NotificationBell({
   useEffect(() => {
     const initializeAudio = async () => {
       const audioSources = [
-        "/public/sounds/notification-sound.mp3",
         "/sounds/notification-sound.mp3",
       ];
 
@@ -531,9 +530,9 @@ export function NotificationBell({
                       className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${getNotificationBackgroundColor(
                         notification
                       )} ${index === displayedNotifications.length - 1 &&
-                          !hasMoreNotifications
-                          ? "border-b-0"
-                          : ""
+                        !hasMoreNotifications
+                        ? "border-b-0"
+                        : ""
                         }`}
                       onClick={() => handleNotificationItemClick(notification)}
                     >
@@ -581,9 +580,9 @@ export function NotificationBell({
                                 {notification.verificationStatus && (
                                   <span
                                     className={`text-xs px-2 py-0.5 rounded-full ${notification.verificationStatus ===
-                                        "verified"
-                                        ? "bg-green-100 text-green-600"
-                                        : "bg-red-100 text-red-600"
+                                      "verified"
+                                      ? "bg-green-100 text-green-600"
+                                      : "bg-red-100 text-red-600"
                                       }`}
                                   >
                                     {notification.verificationStatus}

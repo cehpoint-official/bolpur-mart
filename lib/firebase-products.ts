@@ -15,6 +15,10 @@ import type { Product, TimeRulesConfig, CategoryReference } from "@/types";
 export class FirebaseProductService {
   // Fetch time rules configuration
   static async getTimeRules(): Promise<TimeRulesConfig | null> {
+    if (!db) {
+      console.log("Firestore not initialized, skipping time rules fetch");
+      return null;
+    }
     try {
       console.log("Fetching time rules...");
       const timeRulesDoc = await getDoc(doc(db, "settings", "timeRules"));
@@ -117,6 +121,11 @@ export class FirebaseProductService {
       console.log("Allowed category IDs:", allowedCategoryIds);
 
       // Build Firestore query
+      if (!db) {
+        console.log("Firestore not initialized, returning empty results");
+        return [];
+      }
+
       let productsQuery = query(
         collection(db, "products"),
         where("available", "==", true)
@@ -232,6 +241,7 @@ export class FirebaseProductService {
     }
   }
   static async getProductById(productId: string): Promise<Product | null> {
+    if (!db) return null;
     try {
       const productDoc = await getDoc(doc(db, "products", productId));
       if (!productDoc.exists()) {
@@ -256,6 +266,7 @@ export class FirebaseProductService {
     userId: string,
     orderNumber: string
   ): Promise<boolean> {
+    if (!db) throw new Error('Firestore not initialized');
     try {
       const productRef = doc(db, "products", productId);
       const productDoc = await getDoc(productRef);
@@ -317,6 +328,7 @@ export class FirebaseProductService {
   }
 
   static async getUserProductRating(userId: string, productId: string, orderNumber: string): Promise<number | null> {
+    if (!db) return null;
     try {
       const ratingKey = `${userId}_${productId}_${orderNumber}`;
       const userRatingRef = doc(db, 'userProductRatings', ratingKey);

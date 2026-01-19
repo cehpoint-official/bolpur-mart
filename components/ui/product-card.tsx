@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import type { Product } from "@/types";
 import Image from "next/image";
+import { LoginRequiredDialog } from "@/components/auth/login-required-dialog";
 import {
   getOptimizedImageUrl,
   getPlaceholderUrl,
@@ -28,6 +29,7 @@ export function ProductCard({ product, userId }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false); // Individual loading state
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -75,6 +77,10 @@ export function ProductCard({ product, userId }: ProductCardProps) {
   const roundedRating = Math.round(averageRating * 10) / 10;
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
     setIsAddingToCart(true);
     try {
       await addItem(product.id, 1, undefined);
@@ -86,6 +92,10 @@ export function ProductCard({ product, userId }: ProductCardProps) {
   };
 
   const handleIncreaseQuantity = async () => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
     if (cartItem) {
       await updateQuantity(cartItem.id, cartItem.quantity + 1);
     } else {
@@ -94,6 +104,7 @@ export function ProductCard({ product, userId }: ProductCardProps) {
   };
 
   const handleDecreaseQuantity = async () => {
+    // Decrease doesn't need auth check as user must be logged in to have items in cart
     if (cartItem && quantity > 0) {
       await updateQuantity(cartItem.id, quantity - 1);
     }
@@ -251,10 +262,10 @@ export function ProductCard({ product, userId }: ProductCardProps) {
                 <Star
                   key={i}
                   className={`h-3 w-3 ${i < Math.floor(averageRating)
-                      ? "text-yellow-500 fill-current"
-                      : i < averageRating
-                        ? "text-yellow-500 fill-current opacity-50"
-                        : "text-gray-300"
+                    ? "text-yellow-500 fill-current"
+                    : i < averageRating
+                      ? "text-yellow-500 fill-current opacity-50"
+                      : "text-gray-300"
                     }`}
                 />
               ))}
@@ -376,6 +387,10 @@ export function ProductCard({ product, userId }: ProductCardProps) {
           </div>
         </div>
       </CardContent>
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChangeAction={setShowLoginDialog}
+      />
     </Card>
   );
 }

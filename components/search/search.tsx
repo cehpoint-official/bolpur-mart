@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -613,11 +614,13 @@ export default function Search() {
           <Button
             variant="ghost"
             className="flex flex-col items-center p-2 text-muted-foreground"
-            onClick={() => handleNavigation("/")}
+            asChild
             data-testid="nav-home"
           >
-            <Home size={20} />
-            <span className="text-xs mt-1">Home</span>
+            <Link href="/">
+              <Home size={20} />
+              <span className="text-xs mt-1">Home</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
@@ -630,20 +633,24 @@ export default function Search() {
           <Button
             variant="ghost"
             className="flex flex-col items-center p-2 text-muted-foreground"
-            onClick={() => handleNavigation("/orders")}
+            asChild
             data-testid="nav-orders"
           >
-            <ClipboardList size={20} />
-            <span className="text-xs mt-1">Orders</span>
+            <Link href="/orders">
+              <ClipboardList size={20} />
+              <span className="text-xs mt-1">Orders</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
             className="flex flex-col items-center p-2 text-muted-foreground"
-            onClick={() => handleNavigation("/account")}
+            asChild
             data-testid="nav-account"
           >
-            <User size={20} />
-            <span className="text-xs mt-1">Account</span>
+            <Link href="/account">
+              <User size={20} />
+              <span className="text-xs mt-1">Account</span>
+            </Link>
           </Button>
         </div>
       </nav>

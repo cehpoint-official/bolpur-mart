@@ -48,7 +48,7 @@ export class FirebaseAuthService {
 
   // Email/Password Sign In
   static async signInWithEmailPassword(email: string, password: string): Promise<UserCredential> {
-    if (!auth || !db) throw new Error('Firebase is not initialized');
+    if (!auth || !db) throw new Error('Authentication service is currently unavailable. Please check your connection or contact support.');
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
 
@@ -80,7 +80,7 @@ export class FirebaseAuthService {
     password: string,
     name: string
   ): Promise<UserCredential> {
-    if (!auth || !db) throw new Error('Firebase is not initialized');
+    if (!auth || !db) throw new Error('Authentication service is currently unavailable. Please check your connection or contact support.');
     try {
       // Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
@@ -132,7 +132,7 @@ export class FirebaseAuthService {
 
   // Google Sign In - Preserves User Customizations
   static async signInWithGoogle(): Promise<UserCredential> {
-    if (!auth || !db) throw new Error('Firebase is not initialized');
+    if (!auth || !db) throw new Error('Authentication service is currently unavailable. Please check your connection or contact support.');
     try {
       this.googleProvider.setCustomParameters({
         prompt: 'select_account'
@@ -235,6 +235,7 @@ export class FirebaseAuthService {
 
   // Get current user with custom data
   static async getCurrentUserWithData(): Promise<AuthUser | null> {
+    if (!auth) return null
     const user = auth.currentUser
     if (!user) return null
 

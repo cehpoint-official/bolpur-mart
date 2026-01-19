@@ -207,6 +207,7 @@ export function AuthTabs() {
                     onBlur={(e) => validateSigninField('email', e.target.value)}
                     className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signinErrors.email ? 'border-red-500 focus:ring-red-500' : ''
                       }`}
+                    autoComplete="email"
                     disabled={isSigningIn}
                   />
                   {signinErrors.email && (
@@ -232,6 +233,7 @@ export function AuthTabs() {
                       onBlur={(e) => validateSigninField('password', e.target.value)}
                       className={`h-12 bg-input border-border focus:ring-ring pr-10 text-foreground placeholder:text-muted-foreground ${signinErrors.password ? 'border-red-500 focus:ring-red-500' : ''
                         }`}
+                      autoComplete="current-password"
                       disabled={isSigningIn}
                     />
                   </div>
@@ -269,9 +271,9 @@ export function AuthTabs() {
                 </div>
 
                 {/* General Error */}
-                {signinErrors.general && (
+                {(signinErrors.general || generalError) && (
                   <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
-                    {signinErrors.general}
+                    {signinErrors.general || generalError}
                   </div>
                 )}
 
@@ -375,6 +377,7 @@ export function AuthTabs() {
                     onBlur={(e) => validateSignupField('name', e.target.value)}
                     className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.name ? 'border-red-500 focus:ring-red-500' : ''
                       }`}
+                    autoComplete="name"
                     disabled={isSigningUp}
                   />
                   {signupErrors.name && (
@@ -399,6 +402,7 @@ export function AuthTabs() {
                     onBlur={(e) => validateSignupField('email', e.target.value)}
                     className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.email ? 'border-red-500 focus:ring-red-500' : ''
                       }`}
+                    autoComplete="email"
                     disabled={isSigningUp}
                   />
                   {signupErrors.email && (
@@ -423,6 +427,7 @@ export function AuthTabs() {
                     onBlur={(e) => validateSignupField('password', e.target.value)}
                     className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.password ? 'border-red-500 focus:ring-red-500' : ''
                       }`}
+                    autoComplete="new-password"
                     disabled={isSigningUp}
                   />
                   {signupErrors.password && (
@@ -447,6 +452,7 @@ export function AuthTabs() {
                     onBlur={(e) => validateSignupField('confirmPassword', e.target.value)}
                     className={`h-12 bg-input border-border focus:ring-ring text-foreground placeholder:text-muted-foreground ${signupErrors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''
                       }`}
+                    autoComplete="new-password"
                     disabled={isSigningUp}
                   />
                   {signupErrors.confirmPassword && (
@@ -485,9 +491,9 @@ export function AuthTabs() {
                 </div>
 
                 {/* General Error */}
-                {signupErrors.general && (
+                {(signupErrors.general || generalError) && (
                   <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
-                    {signupErrors.general}
+                    {signupErrors.general || generalError}
                   </div>
                 )}
 

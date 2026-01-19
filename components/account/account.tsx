@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useInstallPrompt } from "@/components/pwa/install-prompt";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import {
   Home,
   Search,
@@ -30,11 +30,11 @@ import {
 } from "lucide-react";
 
 export default function Account() {
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useAuthStore();
   const router = useRouter();
   const { installApp, canInstall } = useInstallPrompt();
 
-  const handleNavigation = (path: string) => (window.location.href = path);
+  const handleNavigation = (path: string) => (router.push(path));
 
   const handleInstallPWA = () => installApp();
 
@@ -221,9 +221,11 @@ export default function Account() {
                 />
               </div>
               {!user ? (
-                <Button variant="default" href="/auth" className="ml-4">
-                  Login
-                </Button>
+                <Link href="/auth" passHref legacyBehavior>
+                  <Button variant="default" className="ml-4">
+                    Login
+                  </Button>
+                </Link>
               ) : (
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg" data-testid="user-name">
@@ -293,8 +295,8 @@ export default function Account() {
                     <div className="flex items-center space-x-4">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${item.disabled
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-primary/10 text-primary hover:bg-primary/20"
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-primary/10 text-primary hover:bg-primary/20"
                           }`}
                       >
                         <item.icon size={20} />
@@ -351,37 +353,46 @@ export default function Account() {
           <Button
             variant="ghost"
             className="flex flex-col items-center text-muted-foreground"
-            onClick={() => handleNavigation("/")}
+            asChild
             data-testid="nav-home"
           >
-            <Home size={20} />
-            <span className="text-xs mt-1">Home</span>
+            <Link href="/">
+              <Home size={20} />
+              <span className="text-xs mt-1">Home</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
             className="flex flex-col items-center  text-muted-foreground"
-            onClick={() => handleNavigation("/search")}
+            asChild
             data-testid="nav-search"
           >
-            <Search size={20} />
-            <span className="text-xs mt-1">Search</span>
+            <Link href="/search">
+              <Search size={20} />
+              <span className="text-xs mt-1">Search</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
             className="flex flex-col items-center text-muted-foreground"
-            onClick={() => handleNavigation("/orders")}
+            asChild
             data-testid="nav-orders"
           >
-            <Receipt size={20} />
-            <span className="text-xs mt-1">Orders</span>
+            <Link href="/orders">
+              <Receipt size={20} />
+              <span className="text-xs mt-1">Orders</span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
             className="flex flex-col items-center text-primary"
+            asChild
             data-testid="nav-account"
           >
-            <User size={20} />
-            <span className="text-xs mt-1">Account</span>
+            <Link href="/account">
+              <User size={20} />
+              <span className="text-xs mt-1">Account</span>
+            </Link>
           </Button>
         </div>
       </nav>

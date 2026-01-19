@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");
     const timeSlot = searchParams.get("timeSlot");
-    
+
     if (!query) {
       return NextResponse.json(
         { error: "Missing required parameter: query" },
@@ -17,13 +17,9 @@ export async function GET(request: Request) {
 
     // Get all products for search processing
     const allProducts = await storage.getProducts();
-    
+
     // Generate search suggestions using the Gemini service
-    const suggestions = await generateSearchSuggestions({
-      query,
-      timeSlot: timeSlot || undefined,
-      allProducts
-    });
+    const suggestions = await generateSearchSuggestions(query, allProducts);
 
     return NextResponse.json(suggestions);
   } catch (error) {
