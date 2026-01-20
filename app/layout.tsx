@@ -16,8 +16,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport = {
-  themeColor: "#0D7377",
-  colorScheme: "light",
+  themeColor: "#FF6B35",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -42,11 +41,12 @@ html {
 }
         ` }} />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#0D7377" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Bolpur Mart" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no" />
       </head>
       <body>
         <Providers>
