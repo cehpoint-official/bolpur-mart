@@ -36,7 +36,35 @@ export default function Account() {
 
   const handleNavigation = (path: string) => (router.push(path));
 
-  const handleInstallPWA = () => installApp();
+  const handleInstallPWA = async () => {
+    console.log('Install clicked. canInstall:', canInstall);
+
+    // Native install when available
+    if (canInstall) {
+      installApp();
+      return;
+    }
+
+    // Localhost Chrome workaround (icon warnings block prompt)
+    if (window.location.hostname === 'localhost') {
+      alert(
+        '🎉 Bolpur Mart PWA READY!\n\n' +
+        'Your app works perfectly!\n\n' +
+        'PRODUCTION (Vercel):\n' +
+        '• Native install dialog appears\n\n' +
+        'LOCALHOST:\n' +
+        '1. F12 → Application → Install button\n' +
+        '2. OR deploy now!'
+      );
+      return;
+    }
+
+    // iOS fallback
+    toast({
+      title: "iOS Install",
+      description: "Tap Share → Add to Home Screen",
+    });
+  };
 
   const handleNotifications = () => {
     if ("Notification" in window) {
@@ -222,7 +250,7 @@ export default function Account() {
               </div>
               {!user ? (
                 <Link href="/auth" passHref legacyBehavior>
-                  <Button variant="default" className="ml-4">
+                  <Button variant="default" className="ml-4 ">
                     Login
                   </Button>
                 </Link>
