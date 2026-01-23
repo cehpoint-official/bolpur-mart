@@ -11,13 +11,13 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 
-interface BeforeInstallPromptEvent extends Event {
+interface BeforePromptEvent extends Event {
     prompt(): Promise<void>
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed', platform: string }>
 }
 
 export function InstallButton() {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforePromptEvent | null>(null)
     const [isInstalled, setIsInstalled] = useState(false)
     const [isBrave, setIsBrave] = useState(false)
     const [isIOS, setIsIOS] = useState(false)
@@ -43,7 +43,7 @@ export function InstallButton() {
         const handleBeforeInstallPrompt = (e: Event) => {
             console.log('✅ beforeinstallprompt FIRED!', e);
             e.preventDefault()
-            setDeferredPrompt(e as BeforeInstallPromptEvent)
+            setDeferredPrompt(e as BeforePromptEvent)
         }
 
         const handleAppInstalled = () => {
