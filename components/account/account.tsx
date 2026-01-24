@@ -61,7 +61,7 @@ export default function Account() {
 
     // iOS fallback
     toast({
-      title: "iOS Install",
+      title: " Install",
       description: "Tap Share → Add to Home Screen",
     });
   };
