@@ -118,7 +118,7 @@ export function InstallButton() {
                 size="sm"
                 className="gap-2 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
             >
-                <img src="/icons/bolpur-mart-192.png" alt="Icon" className="w-5 h-5 rounded-sm" />
+                <img src="/icons/icon-192x192.png" alt="Icon" className="w-5 h-5 rounded-sm" />
                 Install App
             </Button>
 

@@ -276,7 +276,7 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: 'Your order is on the way!',
-    icon: '/icon-192x192.png',
+    icon: '/icons/icon-192x192.png',
     badge: '/badge-72x72.png',
     tag: 'order-update',
     requireInteraction: true,
