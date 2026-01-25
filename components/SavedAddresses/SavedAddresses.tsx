@@ -31,6 +31,8 @@ import {
   Navigation
 } from "lucide-react";
 import type { Address } from "@/types";
+import { LocationPicker } from "@/components/ui/LocationPicker";
+import { GeocodedAddress } from "@/hooks/useGeolocation";
 
 const initialAddressForm = {
   type: "home" as 'home' | 'work' | 'other',
@@ -44,125 +46,7 @@ const initialAddressForm = {
   isDefault: false
 };
 
-// Dynamic Google Maps Geocoding function - COMPLETE
-const getLocationFromCoords = async (lat: number, lng: number) => {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  if (!apiKey) {
-    throw new Error('Google Maps API key not configured');
-  }
-
-  try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&result_type=street_address|sublocality|locality|administrative_area_level_2|administrative_area_level_1|postal_code`
-    );
-
-    if (!response.ok) throw new Error('Geocoding API request failed');
-
-    const data = await response.json();
-
-    if (data.status !== 'OK' || !data.results || data.results.length === 0) {
-      throw new Error(`Geocoding failed: ${data.status || 'No results'}`);
-    }
-
-    let city = "";
-    let state = "";
-    let pinCode = "";
-    let area = "";
-    let subLocality = "";
-    let locality = "";
-    let district = "";
-    let fullFormattedAddress = "";
-
-    // Get the most detailed result
-    const result = data.results[0];
-    const components = result.address_components;
-    fullFormattedAddress = result.formatted_address;
-
-    console.log('🗺️ Raw geocoding result:', {
-      formatted_address: fullFormattedAddress,
-      components: components.map((c: any) => ({ name: c.long_name, types: c.types }))
-    });
-
-    // Parse address components dynamically
-    components.forEach((component: any) => {
-      const types = component.types;
-      const longName = component.long_name;
-
-      if (types.includes("postal_code")) {
-        pinCode = longName;
-      }
-
-      if (types.includes("sublocality_level_1") ||
-        (types.includes("sublocality") && !subLocality)) {
-        subLocality = longName;
-      }
-
-      if (types.includes("locality")) {
-        locality = longName;
-      }
-
-      if (types.includes("administrative_area_level_2")) {
-        district = longName;
-      }
-
-      if (types.includes("administrative_area_level_1")) {
-        state = longName;
-      }
-
-      if (types.includes("neighborhood") && !area) {
-        area = longName;
-      }
-
-      if (types.includes("political") &&
-        !area &&
-        longName !== state &&
-        longName !== locality &&
-        longName !== district) {
-        area = longName;
-      }
-    });
-
-    // Dynamic city selection with priority
-    city = subLocality || locality || district || area || "";
-
-    // Clean up city name
-    if (city) {
-      city = city.replace(/ Municipality| Corporation| Panchayat| Block| Gram Panchayat/gi, '').trim();
-    }
-
-    // Create clean full address
-    const addressParts = [];
-    if (subLocality) addressParts.push(subLocality);
-    if (area && area !== subLocality) addressParts.push(area);
-    if (locality && locality !== subLocality && locality !== area) addressParts.push(locality);
-    if (district && district !== locality && district !== subLocality) {
-      const districtLower = district.toLowerCase();
-      const existingPartsLower = addressParts.map(p => p.toLowerCase());
-      if (!existingPartsLower.some(p => districtLower.includes(p) || p.includes(districtLower))) {
-        addressParts.push(district);
-      }
-    }
-    if (state) addressParts.push(state);
-
-    const cleanFullAddress = addressParts.length > 0 ? addressParts.join(', ') : fullFormattedAddress;
-
-    const result_data = {
-      city: city || "Unknown",
-      state: state || "Unknown",
-      pinCode: pinCode || "",
-      fullAddress: cleanFullAddress,
-      originalFormatted: fullFormattedAddress
-    };
-
-    console.log('✅ Processed location data:', result_data);
-    return result_data;
-
-  } catch (error: any) {
-    console.error('❌ Geocoding error:', error);
-    throw error;
-  }
-};
 
 export default function SavedAddresses() {
   const { user, updateUserData } = useAuth();
@@ -207,141 +91,15 @@ export default function SavedAddresses() {
     }));
   };
 
-  // Enhanced location detection with skeleton loading
-  const fetchCurrentLocation = async () => {
-    setIsLoadingLocation(true);
-    setLocationSkeleton(true);
-
-    try {
-      // Check sessionStorage first with timestamp
-      const storedLocation = sessionStorage.getItem("userLocation");
-      const locationTimestamp = sessionStorage.getItem("userLocationTimestamp");
-
-      if (storedLocation && locationTimestamp) {
-        const timestamp = parseInt(locationTimestamp);
-        const now = Date.now();
-        const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-
-        // Use cached location if it's less than 1 hour old
-        if (now - timestamp < oneHour) {
-          const { city, state, pinCode, fullAddress } = JSON.parse(storedLocation);
-
-          // Simulate loading for better UX
-          await new Promise(resolve => setTimeout(resolve, 800));
-
-          setAddressForm(prev => ({
-            ...prev,
-            city,
-            state,
-            pinCode: pinCode || prev.pinCode,
-            fullAddress: prev.fullAddress || fullAddress
-          }));
-
-          toast({
-            title: "📍 Cached Location Loaded",
-            description: `${city}, ${state}${pinCode ? ` - ${pinCode}` : ''}`,
-          });
-
-          setLocationSkeleton(false);
-          setIsLoadingLocation(false);
-          return;
-        }
-      }
-
-      if (!navigator.geolocation) {
-        throw new Error("Geolocation not supported by this browser");
-      }
-
-      // Show location permission prompt
-      toast({
-        title: "🔍 Requesting Location",
-        description: "Please allow location access to auto-fill your address",
-      });
-
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          reject,
-          {
-            timeout: 20000, // 20 seconds
-            enableHighAccuracy: true,
-            maximumAge: 600000, // 10 minutes
-          }
-        );
-      });
-
-      const { latitude, longitude } = position.coords;
-
-      toast({
-        title: "📡 Location Found",
-        description: "Fetching detailed address information...",
-      });
-
-      // Add delay for skeleton effect
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const locationData = await getLocationFromCoords(latitude, longitude);
-
-      // Save to sessionStorage with timestamp
-      sessionStorage.setItem("userLocation", JSON.stringify(locationData));
-      sessionStorage.setItem("userLocationTimestamp", Date.now().toString());
-
-      setAddressForm(prev => ({
-        ...prev,
-        city: locationData.city,
-        state: locationData.state,
-        pinCode: locationData.pinCode || prev.pinCode,
-        // Only auto-fill fullAddress if it's empty
-        fullAddress: prev.fullAddress || locationData.fullAddress
-      }));
-
-      toast({
-        title: "✅ Location Detected Successfully!",
-        description: `📍 ${locationData.city}, ${locationData.state}${locationData.pinCode ? ` - ${locationData.pinCode}` : ''}`,
-      });
-
-    } catch (error: any) {
-      console.error("Location fetch error:", error);
-
-      let errorMessage = "Could not detect location.";
-      let toastTitle = "⚠️ Location Error";
-
-      if (error.code === 1) {
-        errorMessage = "Location access denied. Please enable location permissions and try again.";
-        toastTitle = "🚫 Permission Denied";
-      } else if (error.code === 2) {
-        errorMessage = "Location unavailable. Please check your GPS/network settings.";
-        toastTitle = "📍 Location Unavailable";
-      } else if (error.code === 3) {
-        errorMessage = "Location request timeout. Please try again.";
-        toastTitle = "⏱️ Request Timeout";
-      } else if (error.message.includes('API key')) {
-        errorMessage = "Location service configuration error.";
-        toastTitle = "⚙️ Service Error";
-      }
-
-      // Use default fallback location
-      const defaultLocation = {
-        city: "Bolpur",
-        state: "West Bengal",
-        pinCode: "731204"
-      };
-
-      setAddressForm(prev => ({
-        ...prev,
-        ...defaultLocation
-      }));
-
-      toast({
-        title: toastTitle,
-        description: `${errorMessage} Using default: Bolpur, West Bengal`,
-        variant: "destructive",
-      });
-
-    } finally {
-      setLocationSkeleton(false);
-      setIsLoadingLocation(false);
-    }
+  // Handle location found from picker
+  const handleLocationFound = (locationData: GeocodedAddress) => {
+    setAddressForm(prev => ({
+      ...prev,
+      city: locationData.city,
+      state: locationData.state,
+      pinCode: locationData.pinCode || prev.pinCode,
+      fullAddress: prev.fullAddress || locationData.fullAddress
+    }));
   };
 
   const handleAddAddress = () => {
@@ -760,35 +518,18 @@ export default function SavedAddresses() {
                 />
               </div>
 
-              {/* Location Detection with Skeleton */}
+              {/* Location Detection Block */}
               <div>
                 <Label>Auto-fill Location</Label>
-                <div className="grid grid-cols-1  mt-1">
-                  <Button
-                    type="button"
-                    variant="outline"
+                <div className="grid grid-cols-1 mt-1">
+                  <LocationPicker
+                    onLocationFoundAction={handleLocationFound}
                     className="flex-1"
-                    onClick={fetchCurrentLocation}
-                    disabled={isLoadingLocation}
-                  >
-                    {isLoadingLocation ? (
-                      <div className="flex items-center space-x-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Detecting...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-2">
-                        <Navigation className="w-4 h-4" />
-                        <span>Use Current</span>
-                      </div>
-                    )}
-                  </Button>
-
-
+                    label="Identify My Location"
+                  />
                 </div>
-
                 <p className="text-xs text-muted-foreground mt-1">
-                  Auto-fill will detect your current location dynamically
+                  Securely detect your delivery address using GPS
                 </p>
               </div>
 
