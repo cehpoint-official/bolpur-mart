@@ -11,17 +11,19 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 
-interface BeforePromptEvent extends Event {
+interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed', platform: string }>
 }
 
 export function InstallButton() {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforePromptEvent | null>(null)
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
     const [isInstalled, setIsInstalled] = useState(false)
     const [isBrave, setIsBrave] = useState(false)
     const [isIOS, setIsIOS] = useState(false)
     const [showIOSModal, setShowIOSModal] = useState(false)
+    const [isAndroid, setIsAndroid] = useState(false)
+
 
     useEffect(() => {
         // Check environment
@@ -32,6 +34,8 @@ export function InstallButton() {
             }
             const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
             setIsIOS(ios)
+            const android = /Android/.test(navigator.userAgent)
+            setIsAndroid(android)
         }
         checkEnvironment()
 
@@ -43,7 +47,7 @@ export function InstallButton() {
         const handleBeforeInstallPrompt = (e: Event) => {
             console.log('✅ beforeinstallprompt FIRED!', e);
             e.preventDefault()
-            setDeferredPrompt(e as BeforePromptEvent)
+            setDeferredPrompt(e as BeforeInstallPromptEvent)
         }
 
         const handleAppInstalled = () => {
@@ -87,7 +91,21 @@ export function InstallButton() {
         }
 
         // 3. Custom iOS/Generic modal (no more browser message)
-        setShowIOSModal(true);
+        if (isIOS) {
+            setShowIOSModal(true);
+            return;
+
+        }
+        if (isAndroid) {
+            alert(
+                "Android:\n\n" +
+                "1. Tap the 3-dot menu (⋮)\n" +
+                "2. Tap 'Install app' or 'Add to Home screen'"
+
+            )
+            return;
+        }
+        alert("Install not supported on this device/browser")
     }
 
     if (isInstalled) return null

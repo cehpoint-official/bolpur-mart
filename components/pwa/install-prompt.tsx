@@ -5,78 +5,96 @@ import { useEffect, useState } from "react"
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
   readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed'
+    outcome: "accepted" | "dismissed"
     platform: string
   }>
   prompt(): Promise<void>
 }
 
 export function useInstallPrompt() {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstallable, setIsInstallable] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [canInstall, setCanInstall] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(false)
+  const [isIOS, setIsIOS] = useState(false)
+  const [isAndroid, setIsAndroid] = useState(false)
 
   useEffect(() => {
+    // Detect platform
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    const android = /android/i.test(navigator.userAgent)
+
+    setIsIOS(ios)
+    setIsAndroid(android)
+
+    // Detect already installed
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsInstalled(true)
+      setCanInstall(false)
+      return
+    }
+
+    // Capture native install prompt (Android / Chrome / Brave)
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
+      console.log("✅ beforeinstallprompt FIRED")
       e.preventDefault()
-      // Stash the event so it can be triggered later
-      setInstallPrompt(e as BeforeInstallPromptEvent)
-      setIsInstallable(true)
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      setCanInstall(true)
     }
 
     const handleAppInstalled = () => {
-      // Clear the deferredPrompt so it can be garbage collected
-      setInstallPrompt(null)
-      setIsInstallable(false)
-      console.log('PWA was installed')
+      console.log("🎉 App installed")
+      setIsInstalled(true)
+      setDeferredPrompt(null)
+      setCanInstall(false)
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+    window.addEventListener("appinstalled", handleAppInstalled)
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+      window.removeEventListener("appinstalled", handleAppInstalled)
     }
   }, [])
 
   const installApp = async () => {
-    if (!installPrompt) {
-      // Fallback for browsers that don't support the install prompt
-      if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
-        alert('To install this app on iOS: tap the Share button and then "Add to Home Screen"')
-      } else if (navigator.userAgent.includes('Android')) {
-        alert('To install this app: tap the menu button in your browser and select "Add to Home Screen" or "Install App"')
-      } else {
-        alert('To install this app: look for "Install" or "Add to Home Screen" option in your browser menu')
+    // 1️⃣ Native prompt (best case — Android / Chrome / Brave)
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+
+      if (outcome === "accepted") {
+        setDeferredPrompt(null)
+        setCanInstall(false)
       }
       return
     }
 
-    // Show the install prompt
-    await installPrompt.prompt()
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await installPrompt.userChoice
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt')
-    } else {
-      console.log('User dismissed the install prompt')
+    // 2️⃣ iOS fallback (manual)
+    if (isIOS) {
+      alert("iOS:\n\nTap Share → Add to Home Screen")
+      return
     }
-    
-    // Clear the prompt
-    setInstallPrompt(null)
-    setIsInstallable(false)
+
+    // 3️⃣ Android fallback (no prompt available)
+    if (isAndroid) {
+      alert(
+        "Android:\n\n" +
+        "1. Tap the 3-dot menu (⋮)\n" +
+        "2. Tap 'Install app' or 'Add to Home screen'"
+      )
+      return
+    }
+
+    // 4️⃣ Desktop / unsupported
+    alert("Install not supported on this device/browser")
   }
 
   return {
     installApp,
-    isInstallable,
-    canInstall: isInstallable || installPrompt !== null
+    canInstall,
+    isInstalled,
+    isIOS,
+    isAndroid,
   }
-}
-
-export function InstallPrompt() {
-  return null // This is just a hook provider
 }

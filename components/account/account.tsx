@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+
 import {
   Home,
   Search,
@@ -32,7 +33,9 @@ import {
 export default function Account() {
   const { user, signOut } = useAuthStore();
   const router = useRouter();
-  const { installApp, canInstall } = useInstallPrompt();
+
+  const { installApp, canInstall, isIOS, isAndroid, isInstalled } = useInstallPrompt();
+
 
   const handleNavigation = (path: string) => (router.push(path));
 
@@ -60,10 +63,22 @@ export default function Account() {
     }
 
     // iOS fallback
-    toast({
-      title: " Install",
-      description: "Tap Share → Add to Home Screen",
-    });
+    if (isIOS) {
+      toast({
+        title: "Install on iPhone",
+        description: "Tap Share → Add to Home Screen",
+      });
+      return;
+    }
+
+    // 4️⃣ Android manual install (no prompt available)
+    if (isAndroid) {
+      toast({
+        title: "Install on Android",
+        description: "Tap ⋮ menu → Install app / Add to Home Screen",
+      });
+      return;
+    }
   };
 
   const handleNotifications = () => {
@@ -155,11 +170,13 @@ export default function Account() {
     {
       icon: Smartphone,
       title: "Install App",
-      description: canInstall
-        ? "Add to home screen"
-        : "Already installed or not available",
+      description: isInstalled
+        ? "Already installed"
+        : canInstall || isIOS || isAndroid
+          ? "Add to home screen"
+          : "Install not available",
       action: handleInstallPWA,
-      disabled: false,
+      disabled: isInstalled,
     },
     {
       icon: HelpCircle,
