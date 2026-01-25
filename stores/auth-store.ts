@@ -370,8 +370,8 @@ export const useAuthStore = create<AuthStore>()(
       {
         name: "bolpur-mart-auth",
         partialize: (state) => ({
-          user: state.user,
-          isAuthenticated: state.isAuthenticated,
+          // Only persist UI/form state, not the auth user object itself
+          currentTab: state.currentTab,
         }),
       }
     ),

@@ -33,16 +33,14 @@ export class FirebaseAuthService {
       const userDoc = await getDoc(doc(db, 'users', user.uid))
       const customData = userDoc.exists() ? (userDoc.data() as User) : null
 
-      return {
-        ...user,
-        customData
-      } as AuthUser
+      const authUser = user as AuthUser
+      authUser.customData = customData
+      return authUser
     } catch (error) {
       console.error('Error converting to AuthUser:', error)
-      return {
-        ...user,
-        customData: null
-      } as AuthUser
+      const authUser = user as AuthUser
+      authUser.customData = null
+      return authUser
     }
   }
 
@@ -266,10 +264,8 @@ export class FirebaseAuthService {
         } catch (error) {
           console.error('Error in auth state change:', error)
           // Fallback: create AuthUser with null customData
-          const authUser: AuthUser = {
-            ...user,
-            customData: null
-          }
+          const authUser = user as AuthUser
+          authUser.customData = null
           callback(authUser)
         }
       } else {
