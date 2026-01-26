@@ -335,7 +335,7 @@ export class FirebaseOrderService {
     batch.set(customerNotificationRef, {
       type: "customer_order_placed",
       title: "Order Placed Successfully",
-      message: `Your order ${order.orderNumber} has been placed successfully. Total: ₹${order.total}`,
+      message: `Order ${order.orderNumber} placed successfully for ₹${order.total}. Check your account for details.`,
       orderId: order.id,
       orderNumber: order.orderNumber,
       customerId: order.customerId,
