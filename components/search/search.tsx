@@ -606,7 +606,9 @@ export default function Search() {
       </div>
 
       {/* Floating Cart */}
-      <FloatingCart userId={userId} onOpenCart={() => setIsCartOpen(true)} />
+      {isAuthenticated && (
+        <FloatingCart userId={userId} onOpenCart={() => setIsCartOpen(true)} />
+      )}
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border z-50">
@@ -656,12 +658,14 @@ export default function Search() {
       </nav>
 
       {/* Cart Modal */}
-      <CartModal
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        onCheckout={handleCheckout}
-        userId={userId}
-      />
+      {isAuthenticated && (
+        <CartModal
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          onCheckout={handleCheckout}
+          userId={userId}
+        />
+      )}
 
       {/* Custom CSS for skeleton loading */}
       <style jsx>{`

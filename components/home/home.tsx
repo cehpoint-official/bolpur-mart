@@ -776,7 +776,9 @@ export default function Home() {
       </div>
 
       {/* Floating Cart */}
-      <FloatingCart userId={getUserId()} onOpenCart={() => setIsCartOpen(true)} />
+      {isAuthenticated && (
+        <FloatingCart userId={getUserId()} onOpenCart={() => setIsCartOpen(true)} />
+      )}
 
       {/* Bottom Navigation */}
       <nav
@@ -829,7 +831,9 @@ export default function Home() {
       </nav>
 
       {/* Cart Modal */}
-      <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onCheckout={handleCheckout} userId={getUserId()} />
+      {isAuthenticated && (
+        <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onCheckout={handleCheckout} userId={getUserId()} />
+      )}
 
       {/* Custom Scrollbar Styles */}
       <style jsx>{`
