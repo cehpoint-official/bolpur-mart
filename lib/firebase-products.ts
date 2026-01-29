@@ -92,7 +92,8 @@ export class FirebaseProductService {
   // Fetch products based on time slot and filters
   static async getProducts(
     searchQuery?: string,
-    categoryFilter?: string | string[]
+    categoryFilter?: string | string[],
+    locationFilter?: string
   ): Promise<Product[]> {
     try {
       console.log("Fetching products...", { searchQuery, categoryFilter });
@@ -200,6 +201,21 @@ export class FirebaseProductService {
               );
               return;
             }
+          }
+        }
+
+        // Apply location filter
+        if (locationFilter && locationFilter.trim() !== "") {
+          const locLower = locationFilter.toLowerCase();
+          const hasNearVendor = product.vendors.some((vendor) =>
+            vendor.location.toLowerCase().includes(locLower)
+          );
+
+          if (!hasNearVendor) {
+            console.log(
+              `Product ${product.name} doesn't have vendors in location: ${locationFilter}`
+            );
+            return;
           }
         }
 

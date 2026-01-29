@@ -42,7 +42,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { FirebaseProductService } from "@/lib/firebase-products";
 import type { Product, CategoryReference } from "@/types";
 import { NotificationBell } from "../ui/notification-bell";
-
+import { LocationSelectorModal } from "../ui/location-selector-modal";
 
 interface LocationState {
   city: string;
@@ -65,6 +65,7 @@ export default function Home() {
     loading: true,
     error: null,
   });
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
 
   // Infinite scroll states
@@ -89,9 +90,7 @@ export default function Home() {
   // Enhanced location fetching with improved accuracy
   useEffect(() => {
     const fetchLocation = async () => {
-      // Check sessionStorage first
       const storedLocation = sessionStorage.getItem("userLocation");
-
       if (storedLocation) {
         const { city, state } = JSON.parse(storedLocation);
         setLocation({
@@ -100,116 +99,22 @@ export default function Home() {
           loading: false,
           error: null,
         });
-        return; // Skip API call if data already exists
-      }
-
-      if (!navigator.geolocation) {
-        setLocation((prev) => ({
-          ...prev,
-          loading: false,
-          error: "Geolocation not supported",
-        }));
         return;
       }
 
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 15000,
-            enableHighAccuracy: true,
-            maximumAge: 300000, // 5 minutes
-          });
-        });
-
-        const { latitude, longitude } = position.coords;
-
-        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}&result_type=street_address|sublocality_level_1|sublocality_level_2|locality|administrative_area_level_3`;
-
-        const response = await fetch(geocodeUrl);
-
-        if (!response.ok) {
-          throw new Error(`Geocoding failed with status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.results && data.results.length > 0) {
-          let city = "Bolpur";
-          let state = "West Bengal";
-
-          // Look through all results to find the most specific location
-          for (const result of data.results.slice(0, 3)) {
-            const addressComponents = result.address_components;
-
-            const cityTypes = [
-              "sublocality_level_1",
-              "sublocality_level_2",
-              "sublocality",
-              "locality",
-              "administrative_area_level_3",
-              "administrative_area_level_2",
-              "postal_town",
-              "neighborhood",
-            ];
-
-            // Find state
-            for (const component of addressComponents) {
-              if (component.types.includes("administrative_area_level_1")) {
-                state = component.long_name;
-                break;
-              }
-            }
-
-            // Find city/locality
-            for (const cityType of cityTypes) {
-              for (const component of addressComponents) {
-                if (component.types.includes(cityType)) {
-                  const potentialCity = component.long_name;
-                  if (
-                    potentialCity !== state &&
-                    !potentialCity.includes("Division") &&
-                    !potentialCity.includes("District") &&
-                    potentialCity.length > 2
-                  ) {
-                    city = potentialCity;
-                    break;
-                  }
-                }
-              }
-              if (city !== "Bolpur") break;
-            }
-
-            if (city !== "Bolpur") break;
-          }
-
-          // Save location to sessionStorage
-          sessionStorage.setItem(
-            "userLocation",
-            JSON.stringify({ city, state })
-          );
-
-          setLocation({
-            city,
-            state,
-            loading: false,
-            error: null,
-          });
-        } else {
-          throw new Error("No location data found");
-        }
-      } catch (error: any) {
-        setLocation((prev) => ({
-          ...prev,
-          loading: false,
-          error: `Could not fetch location: ${error.message}`,
-        }));
+      // If authenticated and no location stored, show modal
+      if (isAuthenticated) {
+        setShowLocationModal(true);
+        setLocation(prev => ({ ...prev, loading: false }));
+        return;
       }
+
+      // Default for guests (as requested: "dont show anything" might mean keep default or hide)
+      setLocation(prev => ({ ...prev, loading: false }));
     };
 
     fetchLocation();
-  }, []);
+  }, [isAuthenticated]);
 
   // Load products with pagination
   const loadProducts = useCallback(async (
@@ -229,7 +134,11 @@ export default function Home() {
     try {
       // For the first page or new search, get all products from Firebase
       if (pageNum === 1 || isNewSearch) {
-        const allProducts = await FirebaseProductService.getProducts(query, category);
+        const allProducts = await FirebaseProductService.getProducts(
+          query,
+          category,
+          location.city
+        );
 
         // Store all products in state for pagination
         setAllProductsCache(allProducts);
@@ -264,7 +173,7 @@ export default function Home() {
       setIsLoadingMore(false);
       setInitialLoading(false);
     }
-  }, [isLoadingMore, allProductsCache]);
+  }, [isLoadingMore, allProductsCache, location.city]);
 
   // Original query for categories (keep this)
   const { data: availableCategories = [] } = useQuery<CategoryReference[]>({
@@ -274,7 +183,7 @@ export default function Home() {
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Load initial products when search query or filters change
+  // Load initial products when search query, filters, or location change
   useEffect(() => {
     setProducts([]);
     setAllProductsCache([]);
@@ -282,7 +191,7 @@ export default function Home() {
     setHasMore(true);
     setInitialLoading(true);
     loadProducts(1, searchQuery, selectedCategory, true);
-  }, [searchQuery, selectedCategory, currentTimeSlot]);
+  }, [searchQuery, selectedCategory, currentTimeSlot, location.city, loadProducts]);
 
   // Intersection Observer for infinite scrolling
   useEffect(() => {
@@ -403,20 +312,26 @@ export default function Home() {
             </div>
             <div>
               <h1 className="font-bold text-xl text-foreground">Bolpur Mart</h1>
-              <div className="text-xs text-muted-foreground flex items-center">
-                <MapPin size={12} className="mr-1" />
-                {location.loading ? (
-                  <div className="flex items-center space-x-1">
-                    <div className="w-12 h-3 bg-gray-200 rounded animate-pulse"></div>
-                    <span>,</span>
-                    <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
-                  </div>
-                ) : (
-                  <span>
-                    {location.city}, {location.state}
-                  </span>
-                )}
-              </div>
+              {isAuthenticated && (
+                <div
+                  className="text-xs text-muted-foreground flex items-center cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setShowLocationModal(true)}
+                >
+                  <MapPin size={12} className="mr-1" />
+                  {location.loading ? (
+                    <div className="flex items-center space-x-1">
+                      <div className="w-12 h-3 bg-gray-200 rounded animate-pulse"></div>
+                      <span>,</span>
+                      <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <span className="flex items-center">
+                      {location.city}, {location.state}
+                      <ChevronDown size={12} className="ml-1" />
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -833,6 +748,18 @@ export default function Home() {
       {/* Cart Modal */}
       {isAuthenticated && (
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onCheckout={handleCheckout} userId={getUserId()} />
+      )}
+
+      {/* Location Selector Modal */}
+      {isAuthenticated && (
+        <LocationSelectorModal
+          isOpen={showLocationModal}
+          onCloseAction={() => setShowLocationModal(false)}
+          onSelectAction={(city: string, state: string) => {
+            setLocation({ city, state, loading: false, error: null });
+            sessionStorage.setItem("userLocation", JSON.stringify({ city, state }));
+          }}
+        />
       )}
 
       {/* Custom Scrollbar Styles */}
