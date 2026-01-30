@@ -317,6 +317,7 @@ export default function Home() {
                   className="text-xs text-muted-foreground flex items-center cursor-pointer hover:text-primary transition-colors"
                   onClick={() => setShowLocationModal(true)}
                 >
+                //location dynamic
                   <MapPin size={12} className="mr-1" />
                   {location.loading ? (
                     <div className="flex items-center space-x-1">
