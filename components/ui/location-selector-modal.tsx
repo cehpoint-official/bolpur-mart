@@ -9,7 +9,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapPin, Navigation, Home, Building, Check, Loader2 } from "lucide-react";
+import { MapPin, Navigation, Home, Building, Check, Loader2, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useGeolocation, GeocodedAddress } from "@/hooks/useGeolocation";
 import { Badge } from "@/components/ui/badge";
@@ -76,23 +76,37 @@ export function LocationSelectorModal({
                     </DialogHeader>
 
                     <div className="space-y-4">
-                        <Button
-                            className="w-full h-14 text-lg font-medium relative overflow-hidden group"
-                            onClick={handleUseCurrentLocation}
-                            disabled={isDetecting}
-                        >
-                            {isDetecting ? (
-                                <div className="flex items-center gap-2">
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    Detecting location...
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <Navigation className="w-5 h-5 group-hover:animate-pulse" />
-                                    Use Current Location
-                                </div>
-                            )}
-                        </Button>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button
+                                className="h-14 text-sm font-medium relative overflow-hidden group"
+                                onClick={handleUseCurrentLocation}
+                                disabled={isDetecting}
+                            >
+                                {isDetecting ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Detecting...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <Navigation className="w-4 h-4 group-hover:animate-pulse" />
+                                        Detect
+                                    </div>
+                                )}
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                className="h-14 text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                                onClick={() => {
+                                    onSelectAction("", "");
+                                    onCloseAction();
+                                }}
+                            >
+                                <X className="w-4 h-4 mr-2" />
+                                Clear
+                            </Button>
+                        </div>
 
                         {addresses.length > 0 && (
                             <>

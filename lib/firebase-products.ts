@@ -119,21 +119,31 @@ export class FirebaseProductService {
       );
       const allowedCategoryIds = allowedCategories.map((cat) => cat.id);
 
-      // console.log("Allowed category IDs:", allowedCategoryIds);
-
       // Build Firestore query
       if (!db) {
         // console.log("Firestore not initialized, returning empty results");
         return [];
       }
 
+      // Try fetching with 'isActive' which seems to be the official schema field
       let productsQuery = query(
         collection(db, "products"),
-        where("available", "==", true)
+        where("isActive", "==", true)
       );
 
       // Execute query
-      const querySnapshot = await getDocs(productsQuery);
+      let querySnapshot = await getDocs(productsQuery);
+
+      // Fallback to 'available' field if isActive returns nothing (for backwards compatibility)
+      if (querySnapshot.empty) {
+        console.log("No products found with isActive=true, trying available=true...");
+        productsQuery = query(
+          collection(db, "products"),
+          where("available", "==", true)
+        );
+        querySnapshot = await getDocs(productsQuery);
+      }
+
       let products: Product[] = [];
 
       querySnapshot.forEach((doc) => {
@@ -143,14 +153,24 @@ export class FirebaseProductService {
           ...productData,
         } as Product;
 
-        // Filter by time slot categories
-        const hasAllowedCategory = product.categories.some((category) =>
-          allowedCategoryIds.includes(category.id)
-        );
+        // Robust category filtering: handle both product.categories (array) and product.categoryId (string)
+        let hasAllowedCategory = false;
+
+        // Check if product has categories array
+        if (product.categories && Array.isArray(product.categories)) {
+          hasAllowedCategory = product.categories.some((category: any) => {
+            const catId = typeof category === 'string' ? category : category.id;
+            return allowedCategoryIds.includes(catId);
+          });
+        }
+        // Check if product has single categoryId
+        else if ((product as any).categoryId) {
+          hasAllowedCategory = allowedCategoryIds.includes((product as any).categoryId);
+        }
 
         if (!hasAllowedCategory) {
           console.log(
-            `Product ${product.name} doesn't have allowed categories. Allowed: ${JSON.stringify(allowedCategoryIds)}, Product has: ${JSON.stringify(product.categories)}`
+            `Product ${product.name} doesn't have allowed categories. Allowed: ${JSON.stringify(allowedCategoryIds)}, Product has categories: ${JSON.stringify(product.categories)}, categoryId: ${(product as any).categoryId}`
           );
           return;
         }
