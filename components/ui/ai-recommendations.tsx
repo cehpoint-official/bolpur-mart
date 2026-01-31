@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/ui/product-card"
 import { RefreshCw, Bot } from "lucide-react"
 import { useTimeSlot } from "@/hooks/use-time-slot"
 import type { Product } from "@/types"
+import { apiGet } from "@/lib/queryClient"
 
 interface AIRecommendationsProps {
   userId: string
@@ -27,12 +28,14 @@ export function AIRecommendations({ userId }: AIRecommendationsProps) {
     isRefetching,
   } = useQuery<RecommendationResponse[]>({
     queryKey: ["/api/recommendations", userId, currentTimeSlot],
+    queryFn: () => apiGet<RecommendationResponse[]>(`/recommendations?userId=${userId}&timeSlot=${currentTimeSlot}`),
     enabled: !!userId,
   })
 
   // Fetch products for the recommended product IDs
   const { data: allProducts = [] } = useQuery<Product[]>({
     queryKey: ["/api/products", "timeSlot", currentTimeSlot],
+    queryFn: () => apiGet<Product[]>(`/products?timeSlot=${currentTimeSlot}`),
   })
 
   const recommendedProducts = recommendations
@@ -40,7 +43,7 @@ export function AIRecommendations({ userId }: AIRecommendationsProps) {
       const product = allProducts.find((p) => p.id === rec.productId)
       return product ? { product, ...rec } : null
     })
-    .filter(Boolean)
+    .filter((item): item is { product: Product } & RecommendationResponse => item !== null)
     .slice(0, 6) // Limit to 6 recommendations
 
   const handleRefresh = () => {

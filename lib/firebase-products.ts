@@ -20,15 +20,15 @@ export class FirebaseProductService {
       return null;
     }
     try {
-      console.log("Fetching time rules...");
+      // console.log("Fetching time rules...");
       const timeRulesDoc = await getDoc(doc(db, "settings", "timeRules"));
 
       if (timeRulesDoc.exists()) {
         const data = timeRulesDoc.data() as TimeRulesConfig;
-        console.log("Time rules fetched:", data);
+        // console.log("Time rules fetched:", data);
         return data;
       } else {
-        console.log("No time rules found");
+        // console.log("No time rules found");
         return null;
       }
     } catch (error) {
@@ -45,32 +45,32 @@ export class FirebaseProductService {
       .toString()
       .padStart(2, "0")}`;
 
-    console.log("Current time:", currentTime);
+    // console.log("Current time:", currentTime);
 
     for (const [slotId, slot] of Object.entries(timeRules)) {
       if (!slot.isActive) continue;
 
-      console.log(
+      /* console.log(
         `Checking slot ${slot.timeSlotName}: ${slot.startTime} - ${slot.endTime}`
-      );
+      ); */
 
       // Handle time slots that cross midnight (like 22:00 - 06:00)
       if (slot.startTime > slot.endTime) {
         // Crosses midnight
         if (currentTime >= slot.startTime || currentTime < slot.endTime) {
-          console.log(`Found active slot: ${slot.timeSlotName}`);
+          // console.log(`Found active slot: ${slot.timeSlotName}`);
           return slotId;
         }
       } else {
         // Same day time slot
         if (currentTime >= slot.startTime && currentTime < slot.endTime) {
-          console.log(`Found active slot: ${slot.timeSlotName}`);
+          // console.log(`Found active slot: ${slot.timeSlotName}`);
           return slotId;
         }
       }
     }
 
-    console.log("No active time slot found");
+    // console.log("No active time slot found");
     return null;
   }
 
@@ -81,7 +81,7 @@ export class FirebaseProductService {
   ): CategoryReference[] {
     const slot = timeRules[currentSlotId];
     if (!slot) {
-      console.log("Slot not found:", currentSlotId);
+      // console.log("Slot not found:", currentSlotId);
       return [];
     }
 
@@ -96,19 +96,19 @@ export class FirebaseProductService {
     locationFilter?: string
   ): Promise<Product[]> {
     try {
-      console.log("Fetching products...", { searchQuery, categoryFilter });
+      // console.log("Fetching products...", { searchQuery, categoryFilter });
 
       // First get time rules
       const timeRules = await this.getTimeRules();
       if (!timeRules) {
-        console.log("No time rules found, returning empty array");
+        // console.log("No time rules found, returning empty array");
         return [];
       }
 
       // Get current time slot
       const currentSlotId = this.getCurrentTimeSlotId(timeRules);
       if (!currentSlotId) {
-        console.log("No active time slot, returning empty array");
+        // console.log("No active time slot, returning empty array");
         return [];
       }
 
@@ -119,11 +119,11 @@ export class FirebaseProductService {
       );
       const allowedCategoryIds = allowedCategories.map((cat) => cat.id);
 
-      console.log("Allowed category IDs:", allowedCategoryIds);
+      // console.log("Allowed category IDs:", allowedCategoryIds);
 
       // Build Firestore query
       if (!db) {
-        console.log("Firestore not initialized, returning empty results");
+        // console.log("Firestore not initialized, returning empty results");
         return [];
       }
 
@@ -150,7 +150,7 @@ export class FirebaseProductService {
 
         if (!hasAllowedCategory) {
           console.log(
-            `Product ${product.name} doesn't have allowed categories`
+            `Product ${product.name} doesn't have allowed categories. Allowed: ${JSON.stringify(allowedCategoryIds)}, Product has: ${JSON.stringify(product.categories)}`
           );
           return;
         }
@@ -219,7 +219,7 @@ export class FirebaseProductService {
           }
         }
 
-        console.log(`Product ${product.name} matches all filters`);
+        // console.log(`Product ${product.name} matches all filters`);
         products.push(product);
       });
 
@@ -241,7 +241,7 @@ export class FirebaseProductService {
 
       const currentSlotId = this.getCurrentTimeSlotId(timeRules);
       if (!currentSlotId) {
-        console.log(" No active time slot");
+        // console.log(" No active time slot");
         return [];
       }
 

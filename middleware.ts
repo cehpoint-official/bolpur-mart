@@ -17,7 +17,8 @@ export async function middleware(request: NextRequest) {
     // Redirect logged-in users away from auth pages
     const isAuthRoute = pathname.startsWith("/auth");
     if (isAuthRoute && session) {
-        return NextResponse.redirect(new URL("/chat", request.url));
+        // Redirection fix: Navigate to Home instead of non-existent /chat 
+        return NextResponse.redirect(new URL("/", request.url));
     }
 
     return NextResponse.next();

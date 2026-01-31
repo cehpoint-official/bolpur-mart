@@ -60,8 +60,8 @@ export default function Home() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [location, setLocation] = useState<LocationState>({
-    city: "Bolpur",
-    state: "West Bengal",
+    city: "",
+    state: "",
     loading: true,
     error: null,
   });
@@ -73,8 +73,10 @@ export default function Home() {
   const [allProductsCache, setAllProductsCache] = useState<Product[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(false);
+  const [isLoadingMoreState, setIsLoadingMore] = useState(false);
+  const [initialLoadingState, setInitialLoading] = useState(false);
+  const isLoadingMore = useRef(false);
+  const initialLoading = useRef(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -123,11 +125,13 @@ export default function Home() {
     category: string,
     isNewSearch: boolean = false
   ) => {
-    if (isLoadingMore && !isNewSearch) return;
+    if (isLoadingMore.current && !isNewSearch) return;
 
     if (isNewSearch) {
+      initialLoading.current = true;
       setInitialLoading(true);
     } else {
+      isLoadingMore.current = true;
       setIsLoadingMore(true);
     }
 
@@ -170,10 +174,12 @@ export default function Home() {
       console.error('Error loading products:', error);
       setHasMore(false);
     } finally {
+      isLoadingMore.current = false;
+      initialLoading.current = false;
       setIsLoadingMore(false);
       setInitialLoading(false);
     }
-  }, [isLoadingMore, allProductsCache, location.city]);
+  }, [location.city]);
 
   // Original query for categories (keep this)
   const { data: availableCategories = [] } = useQuery<CategoryReference[]>({
@@ -189,18 +195,17 @@ export default function Home() {
     setAllProductsCache([]);
     setPage(1);
     setHasMore(true);
-    setInitialLoading(true);
     loadProducts(1, searchQuery, selectedCategory, true);
   }, [searchQuery, selectedCategory, currentTimeSlot, location.city, loadProducts]);
 
   // Intersection Observer for infinite scrolling
   useEffect(() => {
-    if (isLoadingMore || !hasMore) return;
+    if (isLoadingMore.current || !hasMore) return;
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
-        if (target.isIntersecting && hasMore && !isLoadingMore && products.length > 0) {
+        if (target.isIntersecting && hasMore && !isLoadingMore.current && products.length > 0) {
           loadProducts(page, searchQuery, selectedCategory);
         }
       },
@@ -222,7 +227,7 @@ export default function Home() {
   useEffect(() => {
     const handleResize = () => {
       setTimeout(() => {
-        if (loadingRef.current && hasMore && !isLoadingMore && products.length > 0) {
+        if (loadingRef.current && hasMore && !isLoadingMore.current && products.length > 0) {
           const rect = loadingRef.current.getBoundingClientRect();
           if (rect.top < window.innerHeight) {
             loadProducts(page, searchQuery, selectedCategory);
@@ -312,12 +317,11 @@ export default function Home() {
             </div>
             <div>
               <h1 className="font-bold text-xl text-foreground">Bolpur Mart</h1>
-              {isAuthenticated && (
+              {isAuthenticated && location.city && (
                 <div
                   className="text-xs text-muted-foreground flex items-center cursor-pointer hover:text-primary transition-colors"
                   onClick={() => setShowLocationModal(true)}
                 >
-                //location dynamic
                   <MapPin size={12} className="mr-1" />
                   {location.loading ? (
                     <div className="flex items-center space-x-1">
@@ -617,7 +621,7 @@ export default function Home() {
           </div>
         </div>
 
-        {initialLoading ? (
+        {initialLoadingState ? (
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
@@ -634,7 +638,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        ) : products.length === 0 && !initialLoading ? (
+        ) : products.length === 0 && !initialLoadingState ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <ShoppingBag className="text-muted-foreground" size={32} />
@@ -675,7 +679,7 @@ export default function Home() {
               ref={loadingRef}
               className="flex justify-center items-center py-8"
             >
-              {isLoadingMore && (
+              {isLoadingMoreState && (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   <span className="text-sm text-muted-foreground">Loading more products...</span>
