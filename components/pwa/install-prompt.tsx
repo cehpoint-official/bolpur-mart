@@ -17,6 +17,7 @@ export function useInstallPrompt() {
   const [isInstalled, setIsInstalled] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
   const [isAndroid, setIsAndroid] = useState(false)
+  const [isInstalling, setIsInstalling] = useState(false)
 
   useEffect(() => {
     // Detect platform
@@ -27,22 +28,29 @@ export function useInstallPrompt() {
     setIsAndroid(android)
 
     // Detect already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setIsInstalled(true)
-      setCanInstall(false)
-      return
+    const checkInstalled = () => {
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone
+      if (isStandalone) {
+        setIsInstalled(true)
+        setCanInstall(false)
+        console.log("PWA: App is running in standalone mode (already installed)")
+        return true
+      }
+      return false
     }
+
+    if (checkInstalled()) return
 
     // Capture native install prompt (Android / Chrome / Brave)
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log("✅ beforeinstallprompt FIRED")
+      console.log("✅ PWA: beforeinstallprompt FIRED")
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setCanInstall(true)
     }
 
     const handleAppInstalled = () => {
-      console.log("🎉 App installed")
+      console.log("🎉 PWA: App installed successfully")
       setIsInstalled(true)
       setDeferredPrompt(null)
       setCanInstall(false)
@@ -51,21 +59,32 @@ export function useInstallPrompt() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
     window.addEventListener("appinstalled", handleAppInstalled)
 
+    // Check again after a short delay (sometimes display-mode matches late)
+    const timer = setTimeout(checkInstalled, 1000)
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
       window.removeEventListener("appinstalled", handleAppInstalled)
+      clearTimeout(timer)
     }
   }, [])
 
   const installApp = async () => {
     // 1️⃣ Native prompt (best case — Android / Chrome / Brave)
     if (deferredPrompt) {
-      deferredPrompt.prompt()
-      const { outcome } = await deferredPrompt.userChoice
+      setIsInstalling(true)
+      try {
+        deferredPrompt.prompt()
+        const { outcome } = await deferredPrompt.userChoice
 
-      if (outcome === "accepted") {
-        setDeferredPrompt(null)
-        setCanInstall(false)
+        if (outcome === "accepted") {
+          setDeferredPrompt(null)
+          setCanInstall(false)
+        }
+      } catch (error) {
+        console.error("PWA: Install error:", error)
+      } finally {
+        setIsInstalling(false)
       }
       return
     }
@@ -96,5 +115,6 @@ export function useInstallPrompt() {
     isInstalled,
     isIOS,
     isAndroid,
+    isInstalling,
   }
 }

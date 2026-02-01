@@ -28,36 +28,50 @@ import {
   Calendar,
   LogOut,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 
 export default function Account() {
   const { user, signOut } = useAuthStore();
   const router = useRouter();
 
-  const { installApp, canInstall, isIOS, isAndroid, isInstalled } = useInstallPrompt();
+  const { installApp, canInstall, isIOS, isAndroid, isInstalled, isInstalling } = useInstallPrompt();
 
 
   const handleNavigation = (path: string) => (router.push(path));
 
   const handleInstallPWA = async () => {
-    console.log('Install clicked. canInstall:', canInstall);
+    console.log('PWA Check:', { canInstall, isInstalled, isIOS, isAndroid, isInstalling });
 
-    // Native install when available
+    if (isInstalling) return;
+
+    if (isInstalled) {
+      toast({
+        title: "Already Installed",
+        description: "Bolpur Mart is already on your home screen!",
+      });
+      return;
+    }
+
     if (canInstall) {
       installApp();
       return;
     }
 
-    // Localhost Chrome workaround (icon warnings block prompt)
-    if (window.location.hostname === 'localhost') {
+    // 💡 LAPTOP / DESKTOP SPECIFIC GUIDANCE
+    if (!isIOS && !isAndroid) {
+      const isHttps = window.location.protocol === 'https:';
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
       alert(
-        '🎉 Bolpur Mart PWA READY!\n\n' +
-        'Your app works perfectly!\n\n' +
-        'PRODUCTION (Vercel):\n' +
-        '• Native install dialog appears\n\n' +
-        'LOCALHOST:\n' +
-        '1. F12 → Application → Install button\n' +
-        '2. OR deploy now!'
+        '💻 PWA Install on Laptop/Desktop:\n\n' +
+        (isLocal && !isHttps
+          ? 'Localhost Tip: If the install button doesn\'t work, try opening Chrome DevTools (F12) -> Application -> Service Workers and ensure "Update on reload" is checked.\n\n'
+          : '') +
+        'Steps to install manually:\n' +
+        '1. Look for the "Install" icon in your URL bar (right side).\n' +
+        '2. Or click the 3-dot menu (⋮) -> "Save and Share" -> "Install Bolpur Mart".\n\n' +
+        'Note: If it still doesn\'t show, ensure the Service Worker is registered (check console logs).'
       );
       return;
     }
@@ -66,16 +80,16 @@ export default function Account() {
     if (isIOS) {
       toast({
         title: "Install on iPhone",
-        description: "Tap Share → Add to Home Screen",
+        description: "Tap 'Share' -> 'Add to Home Screen'",
       });
       return;
     }
 
-    // 4️⃣ Android manual install (no prompt available)
+    // Android fallback
     if (isAndroid) {
       toast({
         title: "Install on Android",
-        description: "Tap ⋮ menu → Install app / Add to Home Screen",
+        description: "Tap ⋮ (menu) -> 'Install app' or 'Add to home screen'",
       });
       return;
     }
@@ -168,15 +182,16 @@ export default function Account() {
       disabled: !user,
     },
     {
-      icon: Smartphone,
-      title: "Install App",
+      icon: isInstalling ? Loader2 : Smartphone,
+      title: isInstalling ? "Installing..." : "Install App",
       description: isInstalled
         ? "Already installed"
         : canInstall || isIOS || isAndroid
           ? "Add to home screen"
-          : "Install not available",
+          : "Check install status",
       action: handleInstallPWA,
-      disabled: isInstalled,
+      disabled: isInstalled || isInstalling,
+      className: isInstalling ? "animate-pulse" : "",
     },
     {
       icon: HelpCircle,
@@ -344,7 +359,7 @@ export default function Account() {
                           : "bg-primary/10 text-primary hover:bg-primary/20"
                           }`}
                       >
-                        <item.icon size={20} />
+                        <item.icon size={20} className={item.title === "Installing..." ? "animate-spin" : ""} />
                       </div>
                       <div className="text-left">
                         <h4
