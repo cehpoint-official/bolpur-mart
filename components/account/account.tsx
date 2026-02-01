@@ -399,7 +399,7 @@ export default function Account() {
           {/* App Info */}
           <div className="text-center text-sm text-muted-foreground space-y-1 mt-4">
             <p>Bolpur Mart v1.0.0</p>
-            <p>Made with ❤️ for quick commerce</p>
+            <p>Made with ❤️ for quick commerce bolpur</p>
           </div>
         </div>
       </div>
