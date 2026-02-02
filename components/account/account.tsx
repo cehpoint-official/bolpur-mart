@@ -58,7 +58,7 @@ export default function Account() {
       return;
     }
 
-    // 💡 LAPTOP / DESKTOP SPECIFIC GUIDANCE
+    // 💡 LAPTOP / DESKTOP SPECIFIC GUIDANCE //dynamic location
     if (!isIOS && !isAndroid) {
       const isHttps = window.location.protocol === 'https:';
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
